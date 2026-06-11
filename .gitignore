@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Secrets & environment
+.env
+.env.*
+*.key
+.streamlit/secrets.toml
+
+# Eval outputs (generated artifacts, not source)
+eval/results_*.json
+eval/report.md
+eval/scoring_sheet.csv
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Misc
+*.log
+.cache/
+.pytest_cache/
+.mypy_cache/
