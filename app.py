@@ -13,6 +13,26 @@ from mardi_qa.pipeline import answer_question
 
 st.set_page_config(page_title="MaRDI KG Question Answering", page_icon="🔎", layout="wide")
 
+
+# --- Password gate ----------------------------------------------------------------
+def require_password() -> None:
+    """Block the UI until the user enters the shared password."""
+    if st.session_state.get("authenticated"):
+        return
+
+    st.title("🔒 MaRDI KG QA")
+    entered = st.text_input("Password", type="password")
+    if entered:
+        if entered == config.APP_PASSWORD:
+            st.session_state["authenticated"] = True
+            st.rerun()
+        else:
+            st.error("Incorrect password.")
+    st.stop()
+
+
+require_password()
+
 EXAMPLE_QUESTIONS = [
     "What is the purpose of the CRAN package ggplot2?",
     "Which CRAN packages are related to linear regression?",

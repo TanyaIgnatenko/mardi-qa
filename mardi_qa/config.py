@@ -37,9 +37,23 @@ PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX schema: <http://schema.org/>
 """
 
-# --- LLM ----------------------------------------------------------------------
+# --- LLM backend selection ----------------------------------------------------
+# "anthropic" (default, current production) or "ollama" (ZIB local models)
+LLM_PROVIDER = os.getenv("LLM_PROVIDER", "anthropic")
+
+# --- Anthropic (Claude) -------------------------------------------------------
 ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-5")
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
+
+# --- Ollama (ZIB) -------------------------------------------------------------
+OLLAMA_HOST = os.getenv("OLLAMA_HOST", "https://ollama.zib.de/ollama")
+OLLAMA_API_KEY = os.getenv("OLLAMA_API_KEY", "")
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "gemma3:27b")
+OLLAMA_TIMEOUT_S = int(os.getenv("OLLAMA_TIMEOUT_S", "180"))  # local models can be slow
+
+# --- Access control -----------------------------------------------------------
+# Single shared password gating the UI. Override via APP_PASSWORD in the env.
+APP_PASSWORD = os.getenv("APP_PASSWORD", "zibmath2026")
 
 # --- Misc ---------------------------------------------------------------------
 SPARQL_TIMEOUT_S = 60
