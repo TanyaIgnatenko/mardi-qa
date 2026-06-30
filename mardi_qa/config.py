@@ -52,7 +52,8 @@ OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "gemma3:27b")
 OLLAMA_TIMEOUT_S = int(os.getenv("OLLAMA_TIMEOUT_S", "180"))  # local models can be slow
 
 # --- Access control -----------------------------------------------------------
-# Single shared password gating the UI. Override via APP_PASSWORD in the env.
+# Single shared password gating the UI. Defaults to a fixed value so the app
+# works out of the box; override via the APP_PASSWORD env var if desired.
 APP_PASSWORD = os.getenv("APP_PASSWORD", "zibmath2026")
 
 # --- Misc ---------------------------------------------------------------------
