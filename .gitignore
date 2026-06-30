@@ -18,6 +18,7 @@ env/
 .streamlit/secrets.toml
 
 # Eval outputs (generated artifacts, not source)
+eval_results/
 eval/results_*.json
 eval/report.md
 eval/scoring_sheet.csv
