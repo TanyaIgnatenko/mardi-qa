@@ -1,0 +1,16 @@
+# Local build & run helper.
+#   docker compose -f docker/docker-compose.yml up --build
+# Then open http://localhost:8501
+services:
+  mardi-qa:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: mardi-qa:local
+    ports:
+      - "8501:8501"
+    environment:
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-sonnet-4-5}
+      APP_PASSWORD: ${APP_PASSWORD:-zibmath2026}
+    restart: unless-stopped

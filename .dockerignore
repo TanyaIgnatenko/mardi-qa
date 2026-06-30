@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+.tox/
+.coverage
+.coverage.*
+.cache
+coverage.xml
+*.cover
+*.log
+.mypy_cache
+.pytest_cache
+.hypothesis
+
+# Project artefacts not needed in the image
+eval_results/
+evaluate.py
+visualize.py
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+
+# Docker / CI
+docker/
+Dockerfile*
+docker-compose*
+.github/
+
+# Git / docs
+.git
+.gitignore
+README.md
+.claude/
