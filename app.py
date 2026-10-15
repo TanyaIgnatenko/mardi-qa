@@ -9,7 +9,7 @@ import streamlit as st
 from mardi_qa import config
 from mardi_qa.entity_linking import fetch_property_catalog
 from mardi_qa.llm import LLM
-from mardi_qa.pipeline import answer_question
+from mardi_qa.gateway import route_and_answer
 
 st.set_page_config(page_title="MaRDI KG Question Answering", page_icon="🔎", layout="wide")
 
@@ -48,9 +48,28 @@ def load_property_catalog() -> dict[str, str]:
     return fetch_property_catalog()
 
 
-@st.cache_resource
+@st.cache_resource(show_spinner="Loading the local model (first start only)…")
 def get_llm(api_key: str, model: str) -> LLM:
-    return LLM(api_key=api_key, model=model)
+    # Temperature is left at the facade's default of 0, which is what every
+    # evaluation run used: the app must not be a differently-tuned system from
+    # the one the numbers in eval/README.md describe.
+    llm = LLM(api_key=api_key, model=model)
+
+    # Load the model here rather than on the first question. The ZIB server
+    # evicts idle models and a reload took 135–218 seconds in our runs, longer
+    # than OLLAMA_TIMEOUT_S: without this, the first question after an idle
+    # period dies on a timeout instead of answering. Retried, because one
+    # attempt can expire while the load is still running. Hosted backends load
+    # nothing, so they skip it.
+    if llm.provider == "ollama":
+        for _ in range(3):
+            try:
+                llm.complete("Reply with the single word OK.", "Say OK", max_tokens=8)
+                break
+            except Exception:
+                continue
+
+    return llm
 
 
 # --- Sidebar ----------------------------------------------------------------------
@@ -62,13 +81,26 @@ with st.sidebar:
         "executed against the live endpoint, and answered by an LLM grounded "
         "in the retrieved graph nodes."
     )
-    api_key = st.text_input(
-        "Anthropic API key",
-        value=config.ANTHROPIC_API_KEY,
-        type="password",
-        help="Or set ANTHROPIC_API_KEY in your environment.",
-    )
-    model = st.text_input("Model", value=config.ANTHROPIC_MODEL)
+    # Both fields follow the configured backend. They used to be hardcoded to
+    # Anthropic, so switching the default provider to Ollama would have handed a
+    # Claude model name to the ZIB server and asked for an API key the run does
+    # not need.
+    if config.LLM_PROVIDER == "ollama":
+        api_key = st.text_input(
+            "Ollama API key",
+            value=config.OLLAMA_API_KEY,
+            type="password",
+            help="Or set OLLAMA_API_KEY in your environment.",
+        )
+        model = st.text_input("Model", value=config.OLLAMA_MODEL)
+    else:
+        api_key = st.text_input(
+            "Anthropic API key",
+            value=config.ANTHROPIC_API_KEY,
+            type="password",
+            help="Or set ANTHROPIC_API_KEY in your environment.",
+        )
+        model = st.text_input("Model", value=config.ANTHROPIC_MODEL)
 
     st.divider()
     st.markdown("**Endpoint**")
@@ -103,6 +135,13 @@ for question, trace in st.session_state.history:
         _render_trace = st.session_state.get("show_trace", True)
         if _render_trace:
             with st.expander("🔬 How this answer was produced"):
+                if trace.route:
+                    _route_icons = {"sparql": "🕸️", "rag": "📚", "direct": "💬"}
+                    st.markdown(
+                        f"**Route:** {_route_icons.get(trace.route, '')} `{trace.route}`"
+                        + (f" — {trace.route_reason}" if trace.route_reason else "")
+                        + (f" *(via {trace.route_source})*" if trace.route_source else "")
+                    )
                 if trace.linked_entities:
                     st.markdown("**Linked entities**")
                     for e in trace.linked_entities:
@@ -135,7 +174,7 @@ if not question and "pending_question" in st.session_state:
 
 if question:
     if not api_key:
-        st.error("Please provide an Anthropic API key in the sidebar.")
+        st.error(f"Please provide a {config.LLM_PROVIDER} API key in the sidebar.")
         st.stop()
     if not catalog:
         st.error("Property catalog unavailable — cannot ground SPARQL generation.")
@@ -152,7 +191,7 @@ if question:
 
         try:
             llm = get_llm(api_key, model)
-            trace = answer_question(question, llm, catalog, progress=progress)
+            trace = route_and_answer(question, llm, catalog, progress=progress)
             status.update(label="Done", state="complete", expanded=False)
         except Exception as exc:
             status.update(label="Failed", state="error")

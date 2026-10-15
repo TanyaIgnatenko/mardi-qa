@@ -1,0 +1,397 @@
+{
+  "version": "1.0",
+  "created": "2026-08-24",
+  "purpose": "Regression test set for the MaRDI KG QA pipeline. Run with ONE model to detect quality drift when the system changes (prompts, entity linking, SPARQL generation, schema selection).",
+  "kg_notes": {
+    "P16": "author",
+    "P19": "maintained by",
+    "P31": "instance of (R package = Q57080, 20321 items)",
+    "P114": "programmed in",
+    "P163": "copyright license",
+    "P170": "last update",
+    "P342": "depends on software - SHALLOW: 13456 of these point at R itself",
+    "P585": "imports - THE REAL dependency relation, 16061 subjects populated",
+    "P1458": "similar software",
+    "P1459": "Description (long)"
+  },
+  "grading": {
+    "expectation": {
+      "answerable": "The KG contains the facts; a correct pipeline must answer.",
+      "partial": "The KG has some data but it is thin; answer must be correct AND flag incompleteness.",
+      "out_of_scope": "The KG cannot answer this; the pipeline must decline instead of fabricating."
+    },
+    "status": {
+      "good": "Observed to work in the 2026-06-23 baseline run.",
+      "weak": "Observed to fail or degrade - these are the regression targets.",
+      "untested": "Added to this set now; no baseline observation yet."
+    }
+  },
+  "questions": [
+    {
+      "id": "L01",
+      "question": "What is the purpose of the CRAN package ggplot2?",
+      "category": "lookup",
+      "expectation": "answerable",
+      "status": "good",
+      "kg_path": "schema:description of Q57344",
+      "gold": {
+        "qids": ["Q57344"],
+        "must_mention": ["visualization"],
+        "must_not_mention": []
+      },
+      "note": "Baseline answered correctly. Also an entity-linking trap: Q138040 is the ggplot2 BOOK, Q57344 is the package."
+    },
+    {
+      "id": "L02",
+      "question": "What is the R package Matrix used for?",
+      "category": "lookup",
+      "expectation": "answerable",
+      "status": "untested",
+      "kg_path": "schema:description of Q16686",
+      "gold": {
+        "qids": ["Q16686"],
+        "must_mention": ["matrix"],
+        "must_not_mention": []
+      },
+      "note": "KG description: 'Sparse and Dense Matrix Classes and Methods'."
+    },
+    {
+      "id": "L03",
+      "question": "What does the CRAN package knitr do?",
+      "category": "lookup",
+      "expectation": "answerable",
+      "status": "untested",
+      "kg_path": "schema:description of Q23171",
+      "gold": {
+        "qids": ["Q23171"],
+        "must_mention": ["report"],
+        "must_not_mention": []
+      },
+      "note": "KG description: 'A General-Purpose Package for Dynamic Report Generation in R'."
+    },
+    {
+      "id": "L04",
+      "question": "What is the R package tidyr for?",
+      "category": "lookup",
+      "expectation": "answerable",
+      "status": "untested",
+      "kg_path": "schema:description of Q31185",
+      "gold": {
+        "qids": ["Q31185"],
+        "must_mention": ["tidy"],
+        "must_not_mention": []
+      },
+      "note": "KG description: 'Tidy Messy Data'."
+    },
+
+    {
+      "id": "A01",
+      "question": "Who maintains the CRAN package data.table?",
+      "category": "authorship",
+      "expectation": "answerable",
+      "status": "good",
+      "kg_path": "wdt:P19 of Q33745",
+      "gold": {
+        "qids": ["Q33745", "Q5977263"],
+        "must_mention": ["Tyson Barrett"],
+        "must_not_mention": []
+      },
+      "note": "Verified: Q33745 wdt:P19 Q5977263. Do NOT confuse with P16 author (Toby Hocking) or the P43 author-name-strings."
+    },
+    {
+      "id": "A02",
+      "question": "Who maintains the CRAN package ggplot2?",
+      "category": "authorship",
+      "expectation": "answerable",
+      "status": "untested",
+      "kg_path": "wdt:P19 of Q57344",
+      "gold": {
+        "qids": ["Q57344", "Q57202"],
+        "must_mention": ["Thomas Lin Pedersen"],
+        "must_not_mention": []
+      },
+      "note": "Trap: Hadley Wickham is an AUTHOR (P16) of ggplot2 but NOT the maintainer."
+    },
+    {
+      "id": "A03",
+      "question": "Who maintains the R package knitr?",
+      "category": "authorship",
+      "expectation": "answerable",
+      "status": "untested",
+      "kg_path": "wdt:P19 of Q23171",
+      "gold": {
+        "qids": ["Q23171", "Q61714"],
+        "must_mention": ["Yihui Xie"],
+        "must_not_mention": []
+      },
+      "note": "Verified."
+    },
+    {
+      "id": "A04",
+      "question": "Who maintains the R package Rcpp?",
+      "category": "authorship",
+      "expectation": "answerable",
+      "status": "untested",
+      "kg_path": "wdt:P19 of Q20394",
+      "gold": {
+        "qids": ["Q20394", "Q72080"],
+        "must_mention": ["Dirk Eddelbuettel"],
+        "must_not_mention": []
+      },
+      "note": "Verified."
+    },
+    {
+      "id": "A05",
+      "question": "Who are the authors of the CRAN package dplyr?",
+      "category": "authorship",
+      "expectation": "answerable",
+      "status": "untested",
+      "kg_path": "wdt:P16 of Q25186",
+      "gold": {
+        "qids": ["Q25186", "Q62906"],
+        "must_mention": ["Hadley Wickham"],
+        "must_not_mention": []
+      },
+      "note": "Full P16 set: Hadley Wickham Q62906, Kirill Mueller Q57298, Romain Francois Q79319, Davis Vaughan Q92848. Tests author (P16) vs maintainer (P19) distinction."
+    },
+
+    {
+      "id": "D01",
+      "question": "Which packages does dplyr import?",
+      "category": "dependency",
+      "expectation": "answerable",
+      "status": "weak",
+      "kg_path": "wdt:P585 of Q25186",
+      "gold": {
+        "qids": ["Q25186", "Q31187", "Q54216"],
+        "must_mention": ["tibble", "rlang"],
+        "must_not_mention": ["no dependencies", "not captured"]
+      },
+      "note": "KEY REGRESSION TARGET. Verified P585 imports: methods, utils, magrittr, tibble, rlang, R6, cli, lifecycle, pillar, tidyselect, vctrs. The 2026-06-23 baseline queried P342 instead, found only 'R', and wrongly told the user the data was missing."
+    },
+    {
+      "id": "D02",
+      "question": "Which packages does dplyr depend on?",
+      "category": "dependency",
+      "expectation": "partial",
+      "status": "weak",
+      "kg_path": "wdt:P342 (thin) + wdt:P585 (real) of Q25186",
+      "gold": {
+        "qids": ["Q25186"],
+        "must_mention": [],
+        "must_not_mention": ["not captured in the retrieved data"]
+      },
+      "note": "Same fact asked with the ambiguous word 'depend'. P342 yields only R; the useful answer needs P585. A good answer either uses imports or explicitly says the depends-relation only records R."
+    },
+    {
+      "id": "D03",
+      "question": "What does the package ggplot2 import?",
+      "category": "dependency",
+      "expectation": "answerable",
+      "status": "untested",
+      "kg_path": "wdt:P585 of Q57344",
+      "gold": {
+        "qids": ["Q57344", "Q31184"],
+        "must_mention": ["scales"],
+        "must_not_mention": []
+      },
+      "note": "Verified imports: grDevices, stats, MASS, mgcv, scales, tibble, rlang, grid, withr, cli, lifecycle, vctrs, isoband."
+    },
+    {
+      "id": "D04",
+      "question": "Which R packages depend on Rcpp?",
+      "category": "dependency",
+      "expectation": "answerable",
+      "status": "untested",
+      "kg_path": "?s wdt:P342 wd:Q20394 (reverse traversal)",
+      "gold": {
+        "qids": ["Q20394"],
+        "must_mention": [],
+        "must_not_mention": ["no results"]
+      },
+      "note": "Reverse-direction query. 159 subjects; samples: Amelia Q16704, fastGHQuad Q36116, GWmodel Q20540, RSNNS Q23767."
+    },
+
+    {
+      "id": "S01",
+      "question": "Which software is similar to ggplot2?",
+      "category": "similarity",
+      "expectation": "answerable",
+      "status": "untested",
+      "kg_path": "wdt:P1458 of Q57344",
+      "gold": {
+        "qids": ["Q57344", "Q16540"],
+        "must_mention": ["lattice"],
+        "must_not_mention": []
+      },
+      "note": "Verified P1458 (20 items): R, lme4, CODA, CRAN, lattice, MASS, forecast, reshape, Rcpp, knitr, gridExtra, dplyr, shiny, tidyr, data.table, Stan, RStudio, ggmap, tidyverse, GitHub."
+    },
+    {
+      "id": "S02",
+      "question": "What software is similar to data.table?",
+      "category": "similarity",
+      "expectation": "answerable",
+      "status": "untested",
+      "kg_path": "wdt:P1458 of Q33745",
+      "gold": {
+        "qids": ["Q33745", "Q25186"],
+        "must_mention": ["dplyr"],
+        "must_not_mention": []
+      },
+      "note": "Verified P1458 includes dplyr, tibble, tidyr, stringr, lubridate, tidyverse, caret."
+    },
+
+    {
+      "id": "T01",
+      "question": "Which CRAN packages are related to linear regression?",
+      "category": "topic_search",
+      "expectation": "answerable",
+      "status": "good",
+      "kg_path": "keyword/full-text search, no entity anchor",
+      "gold": {
+        "qids": [],
+        "must_mention": [],
+        "must_not_mention": ["no results", "could not find"]
+      },
+      "note": "Baseline returned 100 rows and 20+ packages. Strongly discriminative: every local Ollama model failed this one and claimed no results. Keep as a canary for the keyword-search path."
+    },
+    {
+      "id": "T02",
+      "question": "Which R packages are related to clustering?",
+      "category": "topic_search",
+      "expectation": "answerable",
+      "status": "untested",
+      "kg_path": "keyword/full-text search",
+      "gold": {
+        "qids": [],
+        "must_mention": [],
+        "must_not_mention": ["no results", "could not find"]
+      },
+      "note": "Second canary for the keyword path. KG has clustering packages (e.g. prabclus Q47023, clustvarsel Q19983)."
+    },
+    {
+      "id": "T03",
+      "question": "Which R packages deal with time series analysis?",
+      "category": "topic_search",
+      "expectation": "answerable",
+      "status": "untested",
+      "kg_path": "keyword/full-text search",
+      "gold": {
+        "qids": [],
+        "must_mention": [],
+        "must_not_mention": ["no results", "could not find"]
+      },
+      "note": "KG contains forecast (Q16678) among others."
+    },
+
+    {
+      "id": "G01",
+      "question": "How many R packages are in the MaRDI knowledge graph?",
+      "category": "aggregation",
+      "expectation": "answerable",
+      "status": "untested",
+      "kg_path": "COUNT of ?s wdt:P31 wd:Q57080",
+      "gold": {
+        "qids": ["Q57080"],
+        "must_mention": [],
+        "must_not_mention": [],
+        "numeric_answer": 20321,
+        "numeric_tolerance_pct": 10
+      },
+      "note": "Count verified 2026-08-24: 20321. Expect drift as the KG grows - hence the tolerance."
+    },
+    {
+      "id": "G02",
+      "question": "Which R packages does Hadley Wickham maintain?",
+      "category": "aggregation",
+      "expectation": "answerable",
+      "status": "untested",
+      "kg_path": "?s wdt:P19 wd:Q62906",
+      "gold": {
+        "qids": ["Q62906", "Q25186"],
+        "must_mention": ["dplyr"],
+        "must_not_mention": []
+      },
+      "note": "48 packages verified; includes dplyr, tidyr, stringr, purrr, httr, rvest, testthat, haven, forcats."
+    },
+    {
+      "id": "G03",
+      "question": "Under which license is the CRAN package ggplot2 released?",
+      "category": "aggregation",
+      "expectation": "answerable",
+      "status": "untested",
+      "kg_path": "wdt:P163 of Q57344",
+      "gold": {
+        "qids": ["Q57344"],
+        "must_mention": ["MIT"],
+        "must_not_mention": ["not available", "no license"]
+      },
+      "note": "Verified P163: GNU GPL v2.0 (Q56623), MIT license (Q56842), File License (Q57086). Tests a rarely-used property."
+    },
+
+    {
+      "id": "H01",
+      "question": "What is the difference between the CRAN packages data.table and dplyr?",
+      "category": "honesty",
+      "expectation": "out_of_scope",
+      "status": "weak",
+      "kg_path": "none - requires synthesis, not stored facts",
+      "gold": {
+        "qids": ["Q33745", "Q25186"],
+        "must_mention": [],
+        "must_not_mention": [],
+        "must_not_contain_number": true
+      },
+      "note": "The KG stores facts, not comparisons. Baseline pulled 50 rows and still conceded insufficient data. Acceptable answer: contrast the stored descriptions ('Extension of data.frame' vs 'A Grammar of Data Manipulation') and state that no comparison is recorded. Failure: inventing benchmarks or performance claims."
+    },
+    {
+      "id": "H02",
+      "question": "Which package is better for data manipulation, dplyr or data.table?",
+      "category": "honesty",
+      "expectation": "out_of_scope",
+      "status": "untested",
+      "kg_path": "none - opinion",
+      "gold": {
+        "qids": [],
+        "must_mention": [],
+        "must_not_mention": [],
+        "must_mention_any": ["does not", "cannot", "not record", "no information",
+                             "not available", "depends on", "subjective"]
+      },
+      "note": "Pure preference. The pipeline must decline or present neutral stored facts, never rank them from parametric knowledge. Checked by requiring a disclaimer rather than banning the word 'better', which a correct answer may legitimately use ('neither is better')."
+    },
+    {
+      "id": "H03",
+      "question": "Who will maintain the ggplot2 package in 2030?",
+      "category": "honesty",
+      "expectation": "out_of_scope",
+      "status": "untested",
+      "kg_path": "none - unknowable",
+      "gold": {
+        "qids": [],
+        "must_mention": [],
+        "must_not_mention": [],
+        "must_mention_any": ["does not", "cannot", "no information", "not record",
+                             "not available", "unable", "no way to know", "current"]
+      },
+      "note": "Unanswerable by any KG. Must decline. Banning 'will maintain' was rejected as a check: an honest refusal ('the graph cannot say who will maintain it') legitimately contains that phrase."
+    },
+    {
+      "id": "H04",
+      "question": "How many times was dplyr downloaded from CRAN last month?",
+      "category": "honesty",
+      "expectation": "out_of_scope",
+      "status": "untested",
+      "kg_path": "none - download stats are not in MaRDI",
+      "gold": {
+        "qids": [],
+        "must_mention": [],
+        "must_not_mention": [],
+        "must_mention_any": ["does not", "cannot", "no information", "not record",
+                             "not available", "not contain", "unable"],
+        "must_not_contain_number": true
+      },
+      "note": "Plausible-sounding but absent from the KG. Failure mode: quoting a made-up download figure - caught by must_not_contain_number, which rejects any 4+ digit figure."
+    }
+  ]
+}

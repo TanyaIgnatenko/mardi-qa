@@ -1,0 +1,133 @@
+{
+  "version": "exp-1.0",
+  "purpose": "Does the graph route need a semantic entry point, or does its existing lexical full-text fallback suffice? Each problem class appears TWICE: once phrased in the graph's own vocabulary, once paraphrased so that no distinctive content word is shared with the stored label or description. Passing the lexical variant and failing the paraphrase is the signal that embeddings would earn their place; passing both means they would not.",
+  "grading": "llm_judge",
+  "questions": [
+    {
+      "id": "X01L", "pair": "X01", "variant": "lexical",
+      "problem_qid": "Q6825781",
+      "question": "Which algorithms solve symmetric positive definite linear systems Ax=b?",
+      "gold_algorithms": ["Cholesky (LL^T) factorization"],
+      "criterion": "Names at least one algorithm MaRDI links to the SPD linear systems problem class, such as Cholesky factorization."
+    },
+    {
+      "id": "X01P", "pair": "X01", "variant": "paraphrase",
+      "problem_qid": "Q6825781",
+      "question": "My stiffness matrix is square, symmetric and always gives a positive quadratic form. What is the standard way to factor it when solving for displacements?",
+      "gold_algorithms": ["Cholesky (LL^T) factorization"],
+      "criterion": "Names at least one algorithm MaRDI links to the SPD linear systems problem class, such as Cholesky factorization."
+    },
+    {
+      "id": "X02L", "pair": "X02", "variant": "lexical",
+      "problem_qid": "Q6825408",
+      "question": "Which algorithms perform model reduction of linear time-invariant systems?",
+      "gold_algorithms": ["BT", "HNA", "Matrix Interpolation", "Structured Balanced Truncation"],
+      "criterion": "Names at least one algorithm MaRDI links to the LTI model reduction problem class (BT, HNA, Matrix Interpolation, Structured Balanced Truncation)."
+    },
+    {
+      "id": "X02P", "pair": "X02", "variant": "paraphrase",
+      "problem_qid": "Q6825408",
+      "question": "My simulation has far too many state variables to run in real time. What methods shrink it while keeping the input-output behaviour?",
+      "gold_algorithms": ["BT", "HNA", "Matrix Interpolation", "Structured Balanced Truncation"],
+      "criterion": "Names at least one algorithm MaRDI links to the LTI model reduction problem class (BT, HNA, Matrix Interpolation, Structured Balanced Truncation)."
+    },
+    {
+      "id": "X03L", "pair": "X03", "variant": "lexical",
+      "problem_qid": "Q6825712",
+      "question": "Which algorithms compute a partial spectrum, only a few extreme or interval eigenvalues?",
+      "gold_algorithms": ["Bisection on Sturm counts", "MRRR", "Spectrum slicing", "Lanczos method"],
+      "criterion": "Names at least one algorithm MaRDI links to the partial spectrum problem class (Bisection on Sturm counts, MRRR, spectrum slicing, Lanczos)."
+    },
+    {
+      "id": "X03P", "pair": "X03", "variant": "paraphrase",
+      "problem_qid": "Q6825712",
+      "question": "I have a huge matrix but I only care about the handful of smallest vibration frequencies, not the whole set. What should I use?",
+      "gold_algorithms": ["Bisection on Sturm counts", "MRRR", "Spectrum slicing", "Lanczos method"],
+      "criterion": "Names at least one algorithm MaRDI links to the partial spectrum problem class (Bisection on Sturm counts, MRRR, spectrum slicing, Lanczos)."
+    },
+    {
+      "id": "X04L", "pair": "X04", "variant": "lexical",
+      "problem_qid": "Q6825711",
+      "question": "Which algorithms solve nonlinear least-squares problems minimising a sum of squared residuals?",
+      "gold_algorithms": ["l-bfgs", "nelder-mead", "gradient descent", "bfgs"],
+      "criterion": "Names at least one algorithm MaRDI links to the nonlinear least-squares problem class (L-BFGS, Nelder-Mead, gradient descent, BFGS)."
+    },
+    {
+      "id": "X04P", "pair": "X04", "variant": "paraphrase",
+      "problem_qid": "Q6825711",
+      "question": "I am fitting model parameters to measurements and want to make the total squared mismatch as small as possible. Which numerical methods do that?",
+      "gold_algorithms": ["l-bfgs", "nelder-mead", "gradient descent", "bfgs"],
+      "criterion": "Names at least one algorithm MaRDI links to the nonlinear least-squares problem class (L-BFGS, Nelder-Mead, gradient descent, BFGS)."
+    },
+    {
+      "id": "X05L", "pair": "X05", "variant": "lexical",
+      "problem_qid": "Q6825623",
+      "question": "Which algorithms count or enumerate integer lattice points in a polytope?",
+      "gold_algorithms": ["Barvinok's method", "Enumeration of 0/1 points with threshold BDDs"],
+      "criterion": "Names at least one algorithm MaRDI links to the lattice point counting problem class (Barvinok's method, BDD enumeration)."
+    },
+    {
+      "id": "X05P", "pair": "X05", "variant": "paraphrase",
+      "problem_qid": "Q6825623",
+      "question": "How many whole-number solutions fit inside a bounded region defined by linear inequalities, and what procedure tallies them?",
+      "gold_algorithms": ["Barvinok's method", "Enumeration of 0/1 points with threshold BDDs"],
+      "criterion": "Names at least one algorithm MaRDI links to the lattice point counting problem class (Barvinok's method, BDD enumeration)."
+    },
+    {
+      "id": "X06L", "pair": "X06", "variant": "lexical",
+      "problem_qid": "Q6825774",
+      "question": "Which algorithms solve the generalized eigenvalue problem Ax = lambda Bx?",
+      "gold_algorithms": ["LOBPCG", "Jacobi-Davidson", "QZ", "FEAST"],
+      "criterion": "Names at least one algorithm MaRDI links to the generalized eigenvalue problem class (LOBPCG, Jacobi-Davidson, QZ, FEAST)."
+    },
+    {
+      "id": "X06P", "pair": "X06", "variant": "paraphrase",
+      "problem_qid": "Q6825774",
+      "question": "Two matrices appear together in my vibration analysis, one multiplying the unknown on each side, and I need the resonance values. What solves that?",
+      "gold_algorithms": ["LOBPCG", "Jacobi-Davidson", "QZ", "FEAST"],
+      "criterion": "Names at least one algorithm MaRDI links to the generalized eigenvalue problem class (LOBPCG, Jacobi-Davidson, QZ, FEAST)."
+    },
+    {
+      "id": "X07L", "pair": "X07", "variant": "lexical",
+      "problem_qid": "Q6825731",
+      "question": "Which algorithms perform full-waveform inversion for velocity model building?",
+      "gold_algorithms": ["Total-variation-regularized full-waveform inversion", "Acoustic/elastic full-waveform inversion"],
+      "criterion": "Names at least one algorithm MaRDI links to the full-waveform inversion problem class."
+    },
+    {
+      "id": "X07P", "pair": "X07", "variant": "paraphrase",
+      "problem_qid": "Q6825731",
+      "question": "From seismic recordings at the surface I want to reconstruct how fast waves travel underground, matching the whole recorded signal rather than just arrival times. What methods do this?",
+      "gold_algorithms": ["Total-variation-regularized full-waveform inversion", "Acoustic/elastic full-waveform inversion"],
+      "criterion": "Names at least one algorithm MaRDI links to the full-waveform inversion problem class."
+    },
+    {
+      "id": "X08L", "pair": "X08", "variant": "lexical",
+      "problem_qid": "Q6825425",
+      "question": "Which algorithms perform model reduction of nonlinear systems?",
+      "gold_algorithms": ["TPWL", "Empirical Balanced Truncation", "Linearized Balanced Truncation", "Empirical Balanced Residualization"],
+      "criterion": "Names at least one algorithm MaRDI links to the nonlinear model reduction problem class (TPWL, empirical/linearized balanced truncation, empirical balanced residualization)."
+    },
+    {
+      "id": "X08P", "pair": "X08", "variant": "paraphrase",
+      "problem_qid": "Q6825425",
+      "question": "My model has terms that are not proportional to the state, and it is too expensive to evaluate. How can I build a cheaper surrogate that still tracks it?",
+      "gold_algorithms": ["TPWL", "Empirical Balanced Truncation", "Linearized Balanced Truncation", "Empirical Balanced Residualization"],
+      "criterion": "Names at least one algorithm MaRDI links to the nonlinear model reduction problem class (TPWL, empirical/linearized balanced truncation, empirical balanced residualization)."
+    },
+    {
+      "id": "X09L", "pair": "X09", "variant": "lexical",
+      "problem_qid": "Q6825673",
+      "question": "Which algorithms handle dense small to medium eigenvalue problems?",
+      "gold_algorithms": ["Divide-and-conquer eigensolver", "Implicitly shifted QR", "QZ", "QR algorithm"],
+      "criterion": "Names at least one algorithm MaRDI links to the dense eigenvalue problem class (divide-and-conquer eigensolver, implicitly shifted QR, QZ, QR algorithm)."
+    },
+    {
+      "id": "X09P", "pair": "X09", "variant": "paraphrase",
+      "problem_qid": "Q6825673",
+      "question": "I have a fully populated matrix of a few thousand rows and need all of its characteristic values at once. What is the standard numerical approach?",
+      "gold_algorithms": ["Divide-and-conquer eigensolver", "Implicitly shifted QR", "QZ", "QR algorithm"],
+      "criterion": "Names at least one algorithm MaRDI links to the dense eigenvalue problem class (divide-and-conquer eigensolver, implicitly shifted QR, QZ, QR algorithm)."
+    }
+  ]
+}

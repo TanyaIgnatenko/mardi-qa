@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import re
+from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import TimeoutError as FuturesTimeout
 from dataclasses import dataclass, field
 
 import requests
@@ -100,11 +102,51 @@ def sanitize_query(query: str) -> str:
     return query
 
 
+def query_limit(query: str) -> int | None:
+    """The LIMIT a query carries, if any."""
+    m = re.search(r"\bLIMIT\s+(\d+)", query, re.I)
+    return int(m.group(1)) if m else None
+
+
+def to_count_query(query: str) -> str | None:
+    """Rewrite a listing SELECT into a COUNT of its first variable.
+
+    A listing query capped at LIMIT 50 returns 50 rows whether the real total is
+    51 or 1438, and the answer step has no way to tell — which is how "40
+    publications" got reported for a package used by 1438. Asking the endpoint
+    for the count is the only way to know.
+
+    Conservative on purpose: aggregates, sub-selects and anything whose shape we
+    cannot rewrite safely return None, and the caller then says the total is
+    unknown instead of guessing.
+    """
+    if re.search(r"\bCOUNT\s*\(", query, re.I) or re.search(r"\bGROUP\s+BY\b", query, re.I):
+        return None  # already an aggregate
+    if query.count("SELECT") > 1:
+        return None  # sub-select: the rewrite would target the wrong clause
+
+    m = re.search(r"\bSELECT\b(\s+DISTINCT)?\s+(.+?)\s*\bWHERE\b", query, re.I | re.S)
+    if not m:
+        return None
+    variables = re.findall(r"\?(\w+)", m.group(2))
+    if not variables:
+        return None  # SELECT * — no single thing to count
+
+    body = query[m.end():]
+    body = re.sub(r"\bLIMIT\s+\d+", "", body, flags=re.I)
+    body = re.sub(r"\bOFFSET\s+\d+", "", body, flags=re.I)
+    body = re.sub(r"\bORDER\s+BY\b.+?(?=\}|$)", "", body, flags=re.I | re.S)
+    prefixes = query[: m.start()]
+    return (f"{prefixes}SELECT (COUNT(DISTINCT ?{variables[0]}) AS ?total_count) "
+            f"WHERE{body}")
+
+
 def run_query(query: str, timeout: int = config.SPARQL_TIMEOUT_S) -> SparqlResult:
     """Execute a (sanitized) SPARQL SELECT/ASK query and return bindings."""
     endpoint = discover_endpoint()
-    try:
-        resp = requests.get(
+
+    def _fetch():
+        return requests.get(
             endpoint,
             params={"query": query, "format": "json"},
             headers={
@@ -113,8 +155,22 @@ def run_query(query: str, timeout: int = config.SPARQL_TIMEOUT_S) -> SparqlResul
             },
             timeout=timeout,
         )
-    except requests.RequestException as exc:
-        raise SparqlError(f"Network error talking to SPARQL endpoint: {exc}") from exc
+
+    # requests' timeout is between reads, not a deadline for the whole call: an
+    # endpoint that trickles bytes holds the connection open indefinitely. One
+    # question in an evaluation run took 7003 seconds against this 60s setting.
+    # A hard wall-clock deadline is the only thing that actually bounds it. The
+    # worker thread may linger, but the caller is freed.
+    with ThreadPoolExecutor(max_workers=1) as pool:
+        future = pool.submit(_fetch)
+        try:
+            resp = future.result(timeout=timeout + 5)
+        except FuturesTimeout:
+            raise SparqlError(
+                f"SPARQL endpoint exceeded the {timeout}s deadline for this query"
+            ) from None
+        except requests.RequestException as exc:
+            raise SparqlError(f"Network error talking to SPARQL endpoint: {exc}") from exc
 
     if resp.status_code != 200:
         snippet = resp.text[:500]

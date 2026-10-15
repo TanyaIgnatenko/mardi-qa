@@ -1,0 +1,722 @@
+{
+  "version": "2.0",
+  "built": "2026-09-04",
+  "grading": "llm_judge",
+  "note": "Ground truth computed from the live endpoint at build time. Counts drift as MaRDI grows; rebuild before comparing across long time gaps.",
+  "questions": [
+    {
+      "id": "P01",
+      "category": "traversal",
+      "shape": "reverse_traversal",
+      "question": "Which publications in MaRDI used the software BayesDA?",
+      "gold": {
+        "answerable": true,
+        "subject_qid": "Q22960",
+        "expected_count": 1438,
+        "sample_titles": [
+          "AD Model Builder: using automatic differentiation for statistical inference of highly parameterized complex nonlinear models",
+          "Batch effects correction with unknown subtypes",
+          "Bayes factors for testing order-constrained hypotheses on correlations",
+          "BITE: a Bayesian intensity estimator",
+          "Efficient sampling on the simplex with a self-adjusting logit transform proposal"
+        ],
+        "criterion": "Names concrete MaRDI publications that use BayesDA (1438 exist) and does not invent titles."
+      }
+    },
+    {
+      "id": "P02",
+      "category": "traversal",
+      "shape": "reverse_traversal",
+      "question": "Which publications in MaRDI used the software bootstrap?",
+      "gold": {
+        "answerable": true,
+        "subject_qid": "Q30935",
+        "expected_count": 1151,
+        "sample_titles": [
+          "Methods for mediation analysis with missing data",
+          "Joint adaptive mean-variance regularization and variance stabilization of high dimensional data",
+          "More accurate, calibrated bootstrap confidence intervals for estimating the correlation between two time series",
+          "A generative model for rank data based on insertion sort algorithm",
+          "Likelihood-based inference for bivariate latent failure time models with competing risks under the generalized FGM copula"
+        ],
+        "criterion": "Names concrete MaRDI publications that use bootstrap (1151 exist) and does not invent titles."
+      }
+    },
+    {
+      "id": "P03",
+      "category": "traversal",
+      "shape": "reverse_traversal",
+      "question": "Which publications in MaRDI used the software KernSmooth?",
+      "gold": {
+        "answerable": true,
+        "subject_qid": "Q16757",
+        "expected_count": 1029,
+        "sample_titles": [
+          "Densities, spectral densities and modality.",
+          "An introduction to applied multivariate analysis with R.",
+          "Mode testing, critical bandwidth and excess mass",
+          "Beta kernel estimators for density functions",
+          "A simple nonparametric estimator of a strictly monotone regression function"
+        ],
+        "criterion": "Names concrete MaRDI publications that use KernSmooth (1029 exist) and does not invent titles."
+      }
+    },
+    {
+      "id": "P04",
+      "category": "traversal",
+      "shape": "reverse_traversal",
+      "question": "Which publications in MaRDI used the software QRM?",
+      "gold": {
+        "answerable": true,
+        "subject_qid": "Q23304",
+        "expected_count": 820,
+        "sample_titles": [
+          "Likelihood inference for Archimedean copulas in high dimensions under known margins",
+          "An \\texttt{R} package for value at risk and expected shortfall",
+          "Selecting and estimating regular vine copulae and application to financial returns",
+          "Extremal attractors of Liouville copulas",
+          "Efficient simulation for dependent rare events with applications to extremes"
+        ],
+        "criterion": "Names concrete MaRDI publications that use QRM (820 exist) and does not invent titles."
+      }
+    },
+    {
+      "id": "P05",
+      "category": "traversal",
+      "shape": "reverse_traversal",
+      "question": "Which publications in MaRDI used the software SemiPar?",
+      "gold": {
+        "answerable": true,
+        "subject_qid": "Q19172",
+        "expected_count": 792,
+        "sample_titles": [
+          "Appropriate covariance-specification via penalties for penalized splines in mixed models for longitudinal data",
+          "Penalized regression, mixed effects models and appropriate modelling",
+          "New efficient estimation and variable selection methods for semiparametric varying-coefficient partially linear models",
+          "Local quantile regression",
+          "Variable selection in semiparametric regression modeling"
+        ],
+        "criterion": "Names concrete MaRDI publications that use SemiPar (792 exist) and does not invent titles."
+      }
+    },
+    {
+      "id": "P06",
+      "category": "traversal",
+      "shape": "reverse_traversal",
+      "question": "Which publications in MaRDI used the software glmnet?",
+      "gold": {
+        "answerable": true,
+        "subject_qid": "Q20169",
+        "expected_count": 680,
+        "sample_titles": [
+          "NESTA: A fast and accurate first-order method for sparse recovery",
+          "LIBLINEAR: a library for large linear classification",
+          "Penalized methods for bi-level variable selection",
+          "The group exponential Lasso for bi-level variable selection",
+          "Penalized estimation of directed acyclic graphs from discrete data"
+        ],
+        "criterion": "Names concrete MaRDI publications that use glmnet (680 exist) and does not invent titles."
+      }
+    },
+    {
+      "id": "P07",
+      "category": "traversal",
+      "shape": "reverse_traversal",
+      "question": "Which publications in MaRDI used the software longmemo?",
+      "gold": {
+        "answerable": true,
+        "subject_qid": "Q23163",
+        "expected_count": 665,
+        "sample_titles": [
+          "LASS: a tool for the local analysis of self-similarity",
+          "Statistical analysis of autoregressive fractionally integrated moving average models in R",
+          "Study of on-line measurement of traffic self-similarity",
+          "Applied Econometrics with R",
+          "The effect of long-range dependence on change-point estimators"
+        ],
+        "criterion": "Names concrete MaRDI publications that use longmemo (665 exist) and does not invent titles."
+      }
+    },
+    {
+      "id": "P08",
+      "category": "traversal",
+      "shape": "reverse_traversal",
+      "question": "Which publications in MaRDI used the software glasso?",
+      "gold": {
+        "answerable": true,
+        "subject_qid": "Q19462",
+        "expected_count": 557,
+        "sample_titles": [
+          "Inferring multiple graphical structures",
+          "Model selection for factorial Gaussian graphical models with an application to dynamic regulatory networks",
+          "The huge Package for High-dimensional Undirected Graph Estimation in R",
+          "The minimum regularized covariance determinant estimator",
+          "A projection-based conditional dependence measure with applications to high-dimensional undirected graphical models"
+        ],
+        "criterion": "Names concrete MaRDI publications that use glasso (557 exist) and does not invent titles."
+      }
+    },
+    {
+      "id": "C01",
+      "category": "count",
+      "shape": "aggregation",
+      "question": "How many publications in MaRDI used the software BayesDA?",
+      "gold": {
+        "answerable": true,
+        "subject_qid": "Q22960",
+        "numeric_answer": 1438,
+        "numeric_tolerance_pct": 10,
+        "criterion": "States a count within 10% of 1438."
+      }
+    },
+    {
+      "id": "C02",
+      "category": "count",
+      "shape": "aggregation",
+      "question": "How many publications in MaRDI used the software bootstrap?",
+      "gold": {
+        "answerable": true,
+        "subject_qid": "Q30935",
+        "numeric_answer": 1151,
+        "numeric_tolerance_pct": 10,
+        "criterion": "States a count within 10% of 1151."
+      }
+    },
+    {
+      "id": "C03",
+      "category": "count",
+      "shape": "aggregation",
+      "question": "How many publications in MaRDI used the software KernSmooth?",
+      "gold": {
+        "answerable": true,
+        "subject_qid": "Q16757",
+        "numeric_answer": 1029,
+        "numeric_tolerance_pct": 10,
+        "criterion": "States a count within 10% of 1029."
+      }
+    },
+    {
+      "id": "C04",
+      "category": "count",
+      "shape": "aggregation",
+      "question": "How many publications in MaRDI used the software QRM?",
+      "gold": {
+        "answerable": true,
+        "subject_qid": "Q23304",
+        "numeric_answer": 820,
+        "numeric_tolerance_pct": 10,
+        "criterion": "States a count within 10% of 820."
+      }
+    },
+    {
+      "id": "C05",
+      "category": "count",
+      "shape": "aggregation",
+      "question": "How many publications in MaRDI used the software SemiPar?",
+      "gold": {
+        "answerable": true,
+        "subject_qid": "Q19172",
+        "numeric_answer": 792,
+        "numeric_tolerance_pct": 10,
+        "criterion": "States a count within 10% of 792."
+      }
+    },
+    {
+      "id": "C06",
+      "category": "count",
+      "shape": "aggregation",
+      "question": "How many publications in MaRDI used the software glmnet?",
+      "gold": {
+        "answerable": true,
+        "subject_qid": "Q20169",
+        "numeric_answer": 680,
+        "numeric_tolerance_pct": 10,
+        "criterion": "States a count within 10% of 680."
+      }
+    },
+    {
+      "id": "C07",
+      "category": "count",
+      "shape": "aggregation",
+      "question": "How many publications in MaRDI used the software longmemo?",
+      "gold": {
+        "answerable": true,
+        "subject_qid": "Q23163",
+        "numeric_answer": 665,
+        "numeric_tolerance_pct": 10,
+        "criterion": "States a count within 10% of 665."
+      }
+    },
+    {
+      "id": "C08",
+      "category": "count",
+      "shape": "aggregation",
+      "question": "How many publications in MaRDI used the software glasso?",
+      "gold": {
+        "answerable": true,
+        "subject_qid": "Q19462",
+        "numeric_answer": 557,
+        "numeric_tolerance_pct": 10,
+        "criterion": "States a count within 10% of 557."
+      }
+    },
+    {
+      "id": "J01",
+      "category": "join",
+      "shape": "two_way_join",
+      "question": "How many publications in MaRDI used both BayesDA and bootstrap?",
+      "gold": {
+        "answerable": true,
+        "subject_qid": "Q22960",
+        "second_qid": "Q30935",
+        "numeric_answer": 22,
+        "numeric_tolerance_pct": 15,
+        "criterion": "States a count within 15% of 22."
+      }
+    },
+    {
+      "id": "J02",
+      "category": "join",
+      "shape": "two_way_join",
+      "question": "How many publications in MaRDI used both bootstrap and KernSmooth?",
+      "gold": {
+        "answerable": true,
+        "subject_qid": "Q30935",
+        "second_qid": "Q16757",
+        "numeric_answer": 18,
+        "numeric_tolerance_pct": 15,
+        "criterion": "States a count within 15% of 18."
+      }
+    },
+    {
+      "id": "J03",
+      "category": "join",
+      "shape": "two_way_join",
+      "question": "How many publications in MaRDI used both bootstrap and glmnet?",
+      "gold": {
+        "answerable": true,
+        "subject_qid": "Q30935",
+        "second_qid": "Q20169",
+        "numeric_answer": 4,
+        "numeric_tolerance_pct": 15,
+        "criterion": "States a count within 15% of 4."
+      }
+    },
+    {
+      "id": "J04",
+      "category": "join",
+      "shape": "two_way_join",
+      "question": "How many publications in MaRDI used both KernSmooth and SemiPar?",
+      "gold": {
+        "answerable": true,
+        "subject_qid": "Q16757",
+        "second_qid": "Q19172",
+        "numeric_answer": 31,
+        "numeric_tolerance_pct": 15,
+        "criterion": "States a count within 15% of 31."
+      }
+    },
+    {
+      "id": "J05",
+      "category": "join",
+      "shape": "two_way_join",
+      "question": "How many publications in MaRDI used both glmnet and glasso?",
+      "gold": {
+        "answerable": true,
+        "subject_qid": "Q20169",
+        "second_qid": "Q19462",
+        "numeric_answer": 45,
+        "numeric_tolerance_pct": 15,
+        "criterion": "States a count within 15% of 45."
+      }
+    },
+    {
+      "id": "J06",
+      "category": "join",
+      "shape": "two_way_join",
+      "question": "How many publications in MaRDI used both bootstrap and boot?",
+      "gold": {
+        "answerable": true,
+        "subject_qid": "Q30935",
+        "second_qid": "Q56342",
+        "numeric_answer": 134,
+        "numeric_tolerance_pct": 15,
+        "criterion": "States a count within 15% of 134."
+      }
+    },
+    {
+      "id": "J07",
+      "category": "join",
+      "shape": "two_way_join",
+      "question": "How many publications in MaRDI used both QRM and longmemo?",
+      "gold": {
+        "answerable": false,
+        "subject_qid": "Q23304",
+        "second_qid": "Q23163",
+        "numeric_answer": 0,
+        "numeric_tolerance_pct": 15,
+        "criterion": "Says that no publication uses both, or that the graph records none."
+      }
+    },
+    {
+      "id": "J08",
+      "category": "join",
+      "shape": "two_way_join",
+      "question": "How many publications in MaRDI used both boot and mclust?",
+      "gold": {
+        "answerable": true,
+        "subject_qid": "Q56342",
+        "second_qid": "Q13318",
+        "numeric_answer": 2,
+        "numeric_tolerance_pct": 15,
+        "criterion": "States a count within 15% of 2."
+      }
+    },
+    {
+      "id": "T01",
+      "category": "temporal",
+      "shape": "join_with_date_filter",
+      "question": "How many publications in MaRDI used bootstrap and were published in 2015 or later?",
+      "gold": {
+        "answerable": true,
+        "subject_qid": "Q30935",
+        "since_year": 2015,
+        "numeric_answer": 571,
+        "numeric_tolerance_pct": 15,
+        "criterion": "States a count within 15% of 571."
+      }
+    },
+    {
+      "id": "T02",
+      "category": "temporal",
+      "shape": "join_with_date_filter",
+      "question": "How many publications in MaRDI used KernSmooth and were published in 2010 or later?",
+      "gold": {
+        "answerable": true,
+        "subject_qid": "Q16757",
+        "since_year": 2010,
+        "numeric_answer": 656,
+        "numeric_tolerance_pct": 15,
+        "criterion": "States a count within 15% of 656."
+      }
+    },
+    {
+      "id": "T03",
+      "category": "temporal",
+      "shape": "join_with_date_filter",
+      "question": "How many publications in MaRDI used glmnet and were published in 2015 or later?",
+      "gold": {
+        "answerable": true,
+        "subject_qid": "Q20169",
+        "since_year": 2015,
+        "numeric_answer": 585,
+        "numeric_tolerance_pct": 15,
+        "criterion": "States a count within 15% of 585."
+      }
+    },
+    {
+      "id": "T04",
+      "category": "temporal",
+      "shape": "join_with_date_filter",
+      "question": "How many publications in MaRDI used BayesDA and were published in 2010 or later?",
+      "gold": {
+        "answerable": true,
+        "subject_qid": "Q22960",
+        "since_year": 2010,
+        "numeric_answer": 1266,
+        "numeric_tolerance_pct": 15,
+        "criterion": "States a count within 15% of 1266."
+      }
+    },
+    {
+      "id": "T05",
+      "category": "temporal",
+      "shape": "join_with_date_filter",
+      "question": "How many publications in MaRDI used boot and were published in 2015 or later?",
+      "gold": {
+        "answerable": true,
+        "subject_qid": "Q56342",
+        "since_year": 2015,
+        "numeric_answer": 299,
+        "numeric_tolerance_pct": 15,
+        "criterion": "States a count within 15% of 299."
+      }
+    },
+    {
+      "id": "T06",
+      "category": "temporal",
+      "shape": "join_with_date_filter",
+      "question": "How many publications in MaRDI used ggplot2 and were published in 2015 or later?",
+      "gold": {
+        "answerable": true,
+        "subject_qid": "Q57344",
+        "since_year": 2015,
+        "numeric_answer": 214,
+        "numeric_tolerance_pct": 15,
+        "criterion": "States a count within 15% of 214."
+      }
+    },
+    {
+      "id": "N01",
+      "category": "no_data",
+      "shape": "unanswerable",
+      "question": "Which publications in MaRDI used Mergesort?",
+      "gold": {
+        "answerable": false,
+        "subject_qid": "Q6825472",
+        "entity_kind": "algorithm",
+        "expected_count": 0,
+        "described_by_count": 2,
+        "criterion": "MaRDI records NO publication as *using* this algorithm. The answer must not claim any publication used it. It MAY additionally note that 2 publications *describe* it (property P286) — doing so is better, not worse, as long as the two relations are kept distinct."
+      }
+    },
+    {
+      "id": "N02",
+      "category": "no_data",
+      "shape": "unanswerable",
+      "question": "Which publications in MaRDI used the divide-and-conquer eigensolver for symmetric tridiagonal matrices?",
+      "gold": {
+        "answerable": false,
+        "subject_qid": "Q6825468",
+        "entity_kind": "algorithm",
+        "expected_count": 0,
+        "described_by_count": 2,
+        "criterion": "MaRDI records NO publication as *using* this algorithm. The answer must not claim any publication used it. It MAY additionally note that 2 publications *describe* it (property P286) — doing so is better, not worse, as long as the two relations are kept distinct."
+      }
+    },
+    {
+      "id": "N03",
+      "category": "no_data",
+      "shape": "unanswerable",
+      "question": "Which publications in MaRDI used PGD?",
+      "gold": {
+        "answerable": false,
+        "subject_qid": "Q6825462",
+        "entity_kind": "algorithm",
+        "expected_count": 0,
+        "described_by_count": 2,
+        "criterion": "MaRDI records NO publication as *using* this algorithm. The answer must not claim any publication used it. It MAY additionally note that 2 publications *describe* it (property P286) — doing so is better, not worse, as long as the two relations are kept distinct."
+      }
+    },
+    {
+      "id": "N04",
+      "category": "no_data",
+      "shape": "unanswerable",
+      "question": "Which publications in MaRDI used Second-Order Balanced Truncation?",
+      "gold": {
+        "answerable": false,
+        "subject_qid": "Q6825467",
+        "entity_kind": "algorithm",
+        "expected_count": 0,
+        "described_by_count": 14,
+        "criterion": "MaRDI records NO publication as *using* this algorithm. The answer must not claim any publication used it. It MAY additionally note that 14 publications *describe* it (property P286) — doing so is better, not worse, as long as the two relations are kept distinct."
+      }
+    },
+    {
+      "id": "N05",
+      "category": "no_data",
+      "shape": "unanswerable",
+      "question": "Which publications in MaRDI used the Localized Reduced Basis Multiscale Method?",
+      "gold": {
+        "answerable": false,
+        "subject_qid": "Q6825476",
+        "entity_kind": "algorithm",
+        "expected_count": 0,
+        "described_by_count": 1,
+        "criterion": "MaRDI records NO publication as *using* this algorithm. The answer must not claim any publication used it. It MAY additionally note that 1 publications *describe* it (property P286) — doing so is better, not worse, as long as the two relations are kept distinct."
+      }
+    },
+    {
+      "id": "N06",
+      "category": "no_data",
+      "shape": "unanswerable",
+      "question": "Which publications in MaRDI used the Michaelis-Menten equation (bi bi reaction)?",
+      "gold": {
+        "answerable": false,
+        "subject_qid": "Q6674193",
+        "entity_kind": "formula",
+        "expected_count": 0,
+        "described_by_count": 0,
+        "criterion": "MaRDI records NO publication as *using* this formula. The answer must not claim any publication used it. It MAY additionally note that 0 publications *describe* it (property P286) — doing so is better, not worse, as long as the two relations are kept distinct."
+      }
+    },
+    {
+      "id": "N07",
+      "category": "no_data",
+      "shape": "unanswerable",
+      "question": "Which publications in MaRDI used the product 1 concentration ODE?",
+      "gold": {
+        "answerable": false,
+        "subject_qid": "Q6674189",
+        "entity_kind": "formula",
+        "expected_count": 0,
+        "described_by_count": 0,
+        "criterion": "MaRDI records NO publication as *using* this formula. The answer must not claim any publication used it. It MAY additionally note that 0 publications *describe* it (property P286) — doing so is better, not worse, as long as the two relations are kept distinct."
+      }
+    },
+    {
+      "id": "N08",
+      "category": "no_data",
+      "shape": "unanswerable",
+      "question": "How many publications in MaRDI used Mergesort?",
+      "gold": {
+        "answerable": false,
+        "subject_qid": "Q6825472",
+        "entity_kind": "algorithm",
+        "numeric_answer": 0,
+        "described_by_count": 2,
+        "criterion": "Says zero publications are recorded as using it, or that no such link exists. Must NOT invent a non-zero count for *usage*. Noting that 2 publications describe it is acceptable and welcome if labelled as a different relation."
+      }
+    },
+    {
+      "id": "N09",
+      "category": "no_data",
+      "shape": "unanswerable",
+      "question": "How many publications in MaRDI used the divide-and-conquer eigensolver for symmetric tridiagonal matrices?",
+      "gold": {
+        "answerable": false,
+        "subject_qid": "Q6825468",
+        "entity_kind": "algorithm",
+        "numeric_answer": 0,
+        "described_by_count": 2,
+        "criterion": "Says zero publications are recorded as using it, or that no such link exists. Must NOT invent a non-zero count for *usage*. Noting that 2 publications describe it is acceptable and welcome if labelled as a different relation."
+      }
+    },
+    {
+      "id": "N10",
+      "category": "no_data",
+      "shape": "unanswerable",
+      "question": "How many publications in MaRDI used PGD?",
+      "gold": {
+        "answerable": false,
+        "subject_qid": "Q6825462",
+        "entity_kind": "algorithm",
+        "numeric_answer": 0,
+        "described_by_count": 2,
+        "criterion": "Says zero publications are recorded as using it, or that no such link exists. Must NOT invent a non-zero count for *usage*. Noting that 2 publications describe it is acceptable and welcome if labelled as a different relation."
+      }
+    },
+    {
+      "id": "N11",
+      "category": "no_data",
+      "shape": "unanswerable",
+      "question": "How many publications in MaRDI used Second-Order Balanced Truncation?",
+      "gold": {
+        "answerable": false,
+        "subject_qid": "Q6825467",
+        "entity_kind": "algorithm",
+        "numeric_answer": 0,
+        "described_by_count": 14,
+        "criterion": "Says zero publications are recorded as using it, or that no such link exists. Must NOT invent a non-zero count for *usage*. Noting that 14 publications describe it is acceptable and welcome if labelled as a different relation."
+      }
+    },
+    {
+      "id": "A01",
+      "category": "algorithm_links",
+      "shape": "algorithm_to_publications",
+      "question": "Which publications in MaRDI describe BT (balanced truncation)?",
+      "gold": {
+        "answerable": true,
+        "subject_qid": "Q6825327",
+        "expected_count": 113,
+        "criterion": "Names concrete MaRDI publications describing BT (balanced truncation) (113 are linked) without inventing titles."
+      }
+    },
+    {
+      "id": "A02",
+      "category": "algorithm_links",
+      "shape": "algorithm_to_publications",
+      "question": "Which publications in MaRDI describe POD?",
+      "gold": {
+        "answerable": true,
+        "subject_qid": "Q6825312",
+        "expected_count": 60,
+        "criterion": "Names concrete MaRDI publications describing POD (60 are linked) without inventing titles."
+      }
+    },
+    {
+      "id": "A03",
+      "category": "algorithm_links",
+      "shape": "algorithm_to_publications",
+      "question": "Which publications in MaRDI describe Cross-Gramian-Based Balanced Truncation?",
+      "gold": {
+        "answerable": true,
+        "subject_qid": "Q6825394",
+        "expected_count": 39,
+        "criterion": "Names concrete MaRDI publications describing Cross-Gramian-Based Balanced Truncation (39 are linked) without inventing titles."
+      }
+    },
+    {
+      "id": "A04",
+      "category": "algorithm_links",
+      "shape": "algorithm_to_publications",
+      "question": "Which publications in MaRDI describe the Lanczos Algorithm?",
+      "gold": {
+        "answerable": true,
+        "subject_qid": "Q6825500",
+        "expected_count": 21,
+        "criterion": "Names concrete MaRDI publications describing the Lanczos Algorithm (21 are linked) without inventing titles."
+      }
+    },
+    {
+      "id": "A05",
+      "category": "algorithm_links",
+      "shape": "algorithm_to_publications",
+      "question": "Which publications in MaRDI describe Rayleigh Quotient Iteration?",
+      "gold": {
+        "answerable": true,
+        "subject_qid": "Q6825416",
+        "expected_count": 19,
+        "criterion": "Names concrete MaRDI publications describing Rayleigh Quotient Iteration (19 are linked) without inventing titles."
+      }
+    },
+    {
+      "id": "A06",
+      "category": "algorithm_links",
+      "shape": "algorithm_to_software",
+      "question": "Which software in MaRDI implements BT (balanced truncation)?",
+      "gold": {
+        "answerable": true,
+        "subject_qid": "Q6825327",
+        "expected_count": 12,
+        "criterion": "Names concrete software implementing BT (balanced truncation) (12 are linked) without inventing names."
+      }
+    },
+    {
+      "id": "A07",
+      "category": "algorithm_links",
+      "shape": "algorithm_to_software",
+      "question": "Which software in MaRDI implements LU decomposition?",
+      "gold": {
+        "answerable": true,
+        "subject_qid": "Q6825481",
+        "expected_count": 11,
+        "criterion": "Names concrete software implementing LU decomposition (11 are linked) without inventing names."
+      }
+    },
+    {
+      "id": "A08",
+      "category": "algorithm_links",
+      "shape": "algorithm_to_software",
+      "question": "Which software in MaRDI implements Cholesky Decomposition?",
+      "gold": {
+        "answerable": true,
+        "subject_qid": "Q6825362",
+        "expected_count": 10,
+        "criterion": "Names concrete software implementing Cholesky Decomposition (10 are linked) without inventing names."
+      }
+    },
+    {
+      "id": "A09",
+      "category": "algorithm_links",
+      "shape": "algorithm_to_software",
+      "question": "Which software in MaRDI implements Singular Value Decomposition?",
+      "gold": {
+        "answerable": true,
+        "subject_qid": "Q6825396",
+        "expected_count": 8,
+        "criterion": "Names concrete software implementing Singular Value Decomposition (8 are linked) without inventing names."
+      }
+    }
+  ]
+}

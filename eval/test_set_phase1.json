@@ -1,0 +1,265 @@
+{
+  "version": "phase1-1.4",
+  "purpose": "Phase 1 is an instrument check, not a model ranking: five questions chosen so that every metric in the stage-level suite computes at least once, on questions a real applied mathematician would ask. Run with the router disabled so the graph path is the only path and routing cannot confound the result. P2a and P2b are a matched pair: identical subject and first hop, differing only in whether the publication hop is required, which isolates that hop and the context cut.",
+  "grading": "stage_metrics + llm_judge",
+  "conditions": {
+    "router": "disabled (ROUTER_ENABLED=0)",
+    "repeats": 3,
+    "judge_model": "must NOT be any of the models under comparison"
+  },
+  "questions": [
+    {
+      "id": "P1",
+      "intent": "method selection from a described problem, no entity named",
+      "question": "I have a large sparse system where the matrix is symmetric and positive definite. Which algorithms should I consider?",
+      "tests": [
+        "entity linking when the question names no entity — the hardest linking case",
+        "whether the answer filters taxonomy nodes from actual methods",
+        "whether a lexical fallback reaches a problem class described in other words"
+      ],
+      "gold_sparql": "SELECT ?a ?aLabel WHERE { wd:Q6825781 wdt:P1578 ?a . SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". } }",
+      "required_entities": [
+        "Q6825339",
+        "Q6825529"
+      ],
+      "permitted_entities": [
+        "Q6825781"
+      ],
+      "superfluous_entities": [
+        "Q6825429",
+        "Q6825460",
+        "Q6825687",
+        "Q6825713",
+        "Q6825756",
+        "Q6825911"
+      ],
+      "gold_fact": "Cholesky (LL^T) factorization and Conjugate Gradient for sparse SPD systems are the algorithms MaRDI links to this problem class. The six 'Algorithm Class' nodes returned alongside them are taxonomy, not methods; naming them as answers is noise.",
+      "note": "superfluous_entities are genuinely retrieved and genuinely linked, but they are classification nodes rather than methods. Citing them should cost precision, not count as fabrication."
+    },
+    {
+      "id": "P2a",
+      "pair": "P2",
+      "hops": 1,
+      "intent": "software for a problem class — first hop only",
+      "question": "Which software packages can solve large-scale mixed-integer nonlinear programs?",
+      "tests": [
+        "one hop from a named entity",
+        "recall over a 20-element result set, below the context cut"
+      ],
+      "gold_sparql": "SELECT ?s ?sLabel WHERE { wd:Q16962 wdt:P1458 ?s . SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". } }",
+      "required_entities": [
+        "Q16269",
+        "Q16292",
+        "Q13835",
+        "Q12838",
+        "Q16970",
+        "Q16624",
+        "Q16933",
+        "Q21228",
+        "Q18398",
+        "Q18330",
+        "Q18331",
+        "Q17091",
+        "Q17089",
+        "Q18400",
+        "Q27518",
+        "Q14585",
+        "Q16964"
+      ],
+      "permitted_entities": [
+        "Q16962"
+      ],
+      "expected_counts": {
+        "solvers linked": 20
+      },
+      "gold_fact": "MaRDI links MINLP (Q16962) to 20 solvers via 'similar software': BARON, SCIP, LaGO, AMPL, CPLEX, Gurobi, LINDO, Bonmin, FEASPUMP, Ipopt, DICOPT, AlphaECP, GAMS, MINLPLib, LINDOGlobal, FilMINT, GloMIQO, MINOTAUR, ANTIGONE and SHOT. There is no explicit 'solves problem class' property; this relation carries the list.",
+      "note": "Required is the 17 solvers, not all 20 similar-software links. AMPL and GAMS are modelling interfaces and MINLPLib is a test-instance library: the graph types all three identically to a solver, so separating them needs world knowledge the graph does not carry. Citing one of them as an answer costs precision; that judgement is what this question measures.",
+      "excluded_from_sources": [
+        "Q16191",
+        "Q17125",
+        "Q18306"
+      ]
+    },
+    {
+      "id": "P2b",
+      "pair": "P2",
+      "hops": 2,
+      "intent": "same software, plus their literature — adds the publication hop",
+      "question": "Which software packages can solve large-scale mixed-integer nonlinear programs, and which papers describe them?",
+      "tests": [
+        "second hop: software -> publications",
+        "the only question where truncation certainly bites — the solvers carry thousands of publication links",
+        "whether a stated total was counted or inferred from the rows shown"
+      ],
+      "gold_sparql": "SELECT ?s ?sLabel (COUNT(DISTINCT ?p) AS ?pubs) WHERE { wd:Q16962 wdt:P1458 ?s . OPTIONAL { ?p wdt:P1463 ?s } SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". } } GROUP BY ?s ?sLabel",
+      "required_entities": [
+        "Q13835",
+        "Q12838",
+        "Q18398",
+        "Q18400",
+        "Q18331",
+        "Q27518",
+        "Q16970",
+        "Q18330",
+        "Q16269",
+        "Q14585",
+        "Q734351",
+        "Q5391872",
+        "Q2897306",
+        "Q1940956",
+        "Q1924072",
+        "Q4637830",
+        "Q367170",
+        "Q2943816",
+        "Q823885",
+        "Q2899087",
+        "Q5964241",
+        "Q2490321",
+        "Q3396390",
+        "Q1808724",
+        "Q5897039"
+      ],
+      "permitted_entities": [
+        "Q16962",
+        "Q16292",
+        "Q16624",
+        "Q16933",
+        "Q21228",
+        "Q17091",
+        "Q17089",
+        "Q16964"
+      ],
+      "expected_counts": {
+        "solvers linked": 20,
+        "CPLEX publications": 2781,
+        "SCIP publications": 587,
+        "BARON publications": 391,
+        "SHOT publications": 26
+      },
+      "gold_fact": "The same 20 solvers, each with publications linked via P1463 — CPLEX 2781, Gurobi 840, Ipopt 853, GAMS 879, AMPL 619, SCIP 587, LINDO 553, BARON 391 down to SHOT 26. Any total stated for publications must come from a count, not from the number of rows displayed.",
+      "note": "Required is the 10 solvers that have describing papers plus those 15 papers. The other 7 solvers are permitted, not required: MaRDI records no paper describing them, and saying so is correct. 'describes' is P286 and resolves to 15 papers; 'uses' is P1463 and resolves to thousands. Answering with the second set answers a different question.",
+      "excluded_from_sources": [
+        "Q16191",
+        "Q17125",
+        "Q18306"
+      ]
+    },
+    {
+      "id": "P3",
+      "intent": "model formulation — equations, boundary conditions and discretization of one named model",
+      "question": "What is the drift-diffusion model for semiconductors, which equations and boundary conditions does it involve, and how is it discretized?",
+      "tests": [
+        "MathModDB subgraph, untouched by every earlier test set",
+        "two relation types in one answer: 'contains' (P1560) and 'discretized by' (P1656)",
+        "recall over a 13-element set, below the context cut, so retrieval is not the bottleneck"
+      ],
+      "gold_sparql": "SELECT ?c ?cLabel WHERE { wd:Q6675396 wdt:P1560 ?c . SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". } }",
+      "gold_sparql_discretization": "SELECT ?d ?dLabel WHERE { wd:Q6675396 wdt:P1656 ?d . SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". } }",
+      "required_entities": [
+        "Q6534329",
+        "Q6534333",
+        "Q6674241",
+        "Q6674242",
+        "Q6674284",
+        "Q6674285",
+        "Q6674308",
+        "Q6674312",
+        "Q6674313",
+        "Q6674322",
+        "Q6674323",
+        "Q6775756",
+        "Q6775757",
+        "Q6675388"
+      ],
+      "permitted_entities": [
+        "Q6675396"
+      ],
+      "expected_counts": {
+        "contains": 13,
+        "discretized by": 1
+      },
+      "gold_fact": "The drift-diffusion system describes semi-classical transport of free charge carriers in semiconductors. Equations: Poisson's equation for the electric potential, continuity equations for electrons and for holes, current density relations for electrons and for holes, and Boltzmann approximations for electrons and for holes. Boundary conditions: Dirichlet and Neumann for the electric potential, and Dirichlet and Neumann for the quasi-Fermi potentials of electrons and holes. Discretized by the Scharfetter-Gummel scheme (Q6675388). The answer must close by limiting completeness to what the graph records.",
+      "excluded_from_gold": {
+        "described_by_source": [
+          "the van Roosbroeck paper and two others — the question does not ask for literature"
+        ],
+        "used_by": [
+          "semiconductor charge neutrality, thermodynamic equilibrium, current voltage"
+        ]
+      },
+      "note": "The model is named in the question on purpose. 'charge transport model' (Q6675380) and 'diffusion model' (Q6675394) also exist, so asking by phenomenon would leave three candidates and make the gold arguable. Describing a problem without naming it is already tested by P1. No 'assumptions' sub-question: the graph types nothing — equations, approximations and boundary conditions all arrive through the same 'contains' property — so grading assumptions would measure agreement with our own convention rather than retrieval."
+    },
+    {
+      "id": "P4",
+      "intent": "a question the graph cannot answer, with plausible distractors retrieved",
+      "question": "Are there benchmark datasets for testing sparse linear solvers?",
+      "answerable": false,
+      "tests": [
+        "refusing while plausible near-matches ARE retrieved — the hard version of an honesty test",
+        "not substituting a benchmark suite from a different area",
+        "distinguishing a Zenodo paper-companion deposit from a benchmark collection"
+      ],
+      "gold_sparql": null,
+      "required_entities": [],
+      "permitted_entities": [],
+      "distractor_entities": {
+        "sparse_in_name_but_unrelated": [
+          "Q6679341",
+          "Q6677549",
+          "Q6682973",
+          "Q6697164"
+        ],
+        "solver_in_name_but_companion_data": [
+          "Q6708153",
+          "Q6700388",
+          "Q6718552"
+        ],
+        "benchmark_suites_from_other_areas": [
+          "Q18306",
+          "Q16788"
+        ]
+      },
+      "gold_fact": "MaRDI records no benchmark collection for sparse linear solvers. Its ~16,000 datasets are Zenodo research-data deposits accompanying individual papers. Several carry 'sparse' or 'solver' in their titles — sparse linkage-disequilibrium matrices in genetics, companion data for papers on PETSc and CDCL SAT solvers — but none is a benchmark suite for sparse linear algebra. Benchmark collections do exist in MaRDI for other areas, held as software rather than datasets: MINLPLib (Q18306) and Benchmarks for Optimization Software (Q16788).",
+      "failure_modes": [
+        "presenting any of the sparse-titled Zenodo deposits as a benchmark collection",
+        "substituting MINLPLib or the optimization benchmarks as if they answered the question",
+        "reporting 'nothing found' without distinguishing an empty result from genuine absence"
+      ],
+      "note": "This is not an empty-retrieval test. Twenty datasets match 'sparse' and seven match 'solver', all real and all retrievable, and none of them answers the question. The failure to catch is a plausible substitution, not a hallucination from nothing."
+    },
+    {
+      "id": "P5",
+      "intent": "aggregation under two filters — and a trap on the ranking",
+      "question": "Which publications since 2020 use SCIP for scheduling problems, and who are the most frequent authors?",
+      "tests": [
+        "a date filter and a topic filter composed in one query",
+        "whether the system counts or invents a ranking",
+        "behaviour when the honest answer is 'too few to rank'"
+      ],
+      "gold_sparql": "SELECT ?p ?title WHERE { ?p wdt:P1463 wd:Q13835 ; wdt:P28 ?d ; wdt:P226 ?m . OPTIONAL { ?p wdt:P159 ?title } FILTER(YEAR(?d) >= 2020 && STRSTARTS(?m, \"90B35\")) }",
+      "required_entities": [
+        "Q2281613",
+        "Q2197322",
+        "Q5084650"
+      ],
+      "permitted_entities": [
+        "Q13835",
+        "the twelve authors of those three papers"
+      ],
+      "expected_counts": {
+        "SCIP publications total": 587,
+        "since 2020": 186,
+        "MSC 90B35 scheduling": 23,
+        "all conditions together": 3,
+        "max publications per author in the matching set": 1
+      },
+      "gold_fact": "Exactly three publications satisfy all three conditions: 'Daily course pattern formulation and valid inequalities for the curriculum-based course timetabling problem' (2020), 'On the exact solution of a large class of parallel machine scheduling problems' (2020), and 'Team Orienteering with Time-Varying Profit' (2022). Twelve distinct authors appear across them and NO author appears more than once, so there is no most-frequent author. Stating any frequency ranking is a failure even when the authors named are real.",
+      "failure_modes": [
+        "producing a top-authors ranking — the frequencies would have to be invented",
+        "answering with the 186 (date only) or 23 (topic only) subsets instead of the 3 that satisfy both",
+        "falling back on the overall SCIP author ranking (Berthold, Koch, Pfetsch), which is real but answers a different question"
+      ],
+      "note": "The trap is the second half of the question. The graph answers the first half exactly and makes the second half unanswerable, which is the harder thing to get right."
+    }
+  ]
+}

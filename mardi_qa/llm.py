@@ -22,9 +22,10 @@ from . import config
 class _AnthropicBackend:
     """Wrapper around Anthropic's messages API."""
 
-    def __init__(self, api_key: str, model: str):
+    def __init__(self, api_key: str, model: str, temperature: float = 0.0):
         self.client = anthropic.Anthropic(api_key=api_key)
         self.model = model
+        self.temperature = temperature
 
     def complete(self, system: str, user: str, max_tokens: int) -> str:
         msg = self.client.messages.create(
@@ -32,6 +33,11 @@ class _AnthropicBackend:
             max_tokens=max_tokens,
             system=system,
             messages=[{"role": "user", "content": user}],
+            # Set explicitly, because the API defaults to 1.0 while the Ollama
+            # backend pins 0.0: left alone, every cross-backend comparison had
+            # Anthropic sampling randomly against local models decoding greedily,
+            # which is both unequal and unreproducible.
+            temperature=self.temperature,
         )
         return "".join(block.text for block in msg.content if block.type == "text")
 
@@ -44,11 +50,13 @@ class _OllamaBackend:
     bound generation length.
     """
 
-    def __init__(self, host: str, api_key: str, model: str, timeout_s: int):
+    def __init__(self, host: str, api_key: str, model: str, timeout_s: int,
+                 temperature: float = 0.0):
         self.host = host.rstrip("/")
         self.api_key = api_key
         self.model = model
         self.timeout_s = timeout_s
+        self.temperature = temperature
 
     def complete(self, system: str, user: str, max_tokens: int) -> str:
         url = f"{self.host}/api/chat"
@@ -63,16 +71,40 @@ class _OllamaBackend:
                 {"role": "user", "content": user},
             ],
             "stream": False,
+            # Reasoning models put their chain of thought in a separate field and
+            # spend the token budget on it: asked for JSON, qwen3.5 returned an
+            # empty `content`, a full `thinking`, and done_reason "length" — it
+            # never reached the answer. Turning thinking off makes these models
+            # answer directly. Ollama ignores the flag for models without it.
+            "think": False,
             "options": {
                 "num_predict": max_tokens,
-                "temperature": 0.0,  # deterministic for evaluation
+                "temperature": self.temperature,
+                # Pinned rather than left to Ollama's defaults (0.9 / 40), so the
+                # decoding rule is the same one the Anthropic side uses and is
+                # recorded here rather than inherited from a server version.
+                "top_p": 1.0,
+                "top_k": 0,
             },
         }
         resp = requests.post(url, json=payload, headers=headers, timeout=self.timeout_s)
         resp.raise_for_status()
         data = resp.json()
-        # /api/chat returns {"message": {"role": "assistant", "content": "..."}, ...}
-        return data.get("message", {}).get("content", "")
+        message = data.get("message", {}) or {}
+        content = (message.get("content") or "").strip()
+        if content:
+            return content
+
+        # Thinking was not suppressed after all. The answer, if any, trails the
+        # reasoning — returning that beats returning nothing, and the caller's
+        # JSON/SPARQL extraction will tell us whether it is usable.
+        thinking = (message.get("thinking") or "").strip()
+        if thinking:
+            return thinking
+        raise RuntimeError(
+            f"{self.model} returned no content "
+            f"(done_reason={data.get('done_reason')}, eval_count={data.get('eval_count')})"
+        )
 
 
 # ----- Public LLM facade -------------------------------------------------------
@@ -92,14 +124,21 @@ class LLM:
         provider: Optional[str] = None,
         model: Optional[str] = None,
         api_key: Optional[str] = None,
+        temperature: float = 0.0,
     ):
         self.provider = (provider or config.LLM_PROVIDER).lower()
+        # Greedy by default on both backends. Comparing models only means
+        # something if the decoding rule is held fixed across them, and a fixed
+        # rule also makes a run reproducible — a differing answer then points at
+        # a changed prompt or changed graph data, not at the sampler.
+        self.temperature = temperature
 
         if self.provider == "anthropic":
             self.model = model or config.ANTHROPIC_MODEL
             self.backend = _AnthropicBackend(
                 api_key=api_key or config.ANTHROPIC_API_KEY,
                 model=self.model,
+                temperature=temperature,
             )
         elif self.provider == "ollama":
             self.model = model or config.OLLAMA_MODEL
@@ -108,6 +147,7 @@ class LLM:
                 api_key=api_key or config.OLLAMA_API_KEY,
                 model=self.model,
                 timeout_s=config.OLLAMA_TIMEOUT_S,
+                temperature=temperature,
             )
         else:
             raise ValueError(

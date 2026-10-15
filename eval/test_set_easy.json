@@ -1,0 +1,148 @@
+{
+  "version": "easy-1.1",
+  "purpose": "Five questions the pipeline is already known to answer — they come from the 50-question set it scores 47/50 on — given the full gold the stage harness needs. Phase 1 is the hard set and localises new defects; this is the easy set and catches regressions: a stage metric dropping here means a change broke something that worked. It also carries the only question in either set where truncation actually bites.",
+  "grading": "stage_metrics + llm_judge",
+  "conditions": {
+    "router": "disabled (ROUTER_ENABLED=0)",
+    "repeats": 3,
+    "judge_model": "must NOT be any model under comparison"
+  },
+  "questions": [
+    {
+      "id": "Q1",
+      "intent": "count over one entity — the simplest shape there is",
+      "question": "How many publications in MaRDI used the software BayesDA?",
+      "tests": [
+        "single hop, aggregate, one row back",
+        "that a count query is not given a LIMIT"
+      ],
+      "gold_sparql": "SELECT (COUNT(DISTINCT ?p) AS ?n) WHERE { ?p wdt:P1463 wd:Q22960 }",
+      "pivot_entities": [
+        "Q22960"
+      ],
+      "required_entities": [],
+      "permitted_entities": [
+        "Q22960"
+      ],
+      "expected_counts": {
+        "publications": 1438
+      },
+      "gold_fact": "MaRDI records 1438 publications that used BayesDA. The count must be stated, and attributed to the graph rather than presented as a fact about the literature.",
+      "answer_shape": "count",
+      "numeric_answer": 1438,
+      "numeric_tolerance_pct": 10
+    },
+    {
+      "id": "Q2",
+      "intent": "the same entity, listed instead of counted",
+      "question": "Which publications in MaRDI used the software BayesDA?",
+      "tests": [
+        "THE truncation case: 1438 matches against a 50-row limit",
+        "whether the row count is passed off as the total",
+        "whether a COUNT is issued to learn the real total"
+      ],
+      "gold_sparql": "SELECT ?p WHERE { ?p wdt:P1463 wd:Q22960 }",
+      "pivot_entities": [
+        "Q22960"
+      ],
+      "required_entities": [],
+      "permitted_entities": [
+        "any publication linked to Q22960 via P1463"
+      ],
+      "expected_counts": {
+        "publications": 1438,
+        "rows a default query returns": 50
+      },
+      "gold_fact": "1438 publications used BayesDA. Listing a sample is correct; stating the number of rows shown as though it were the total is not. Examples include 'Bayes factors for testing order-constrained hypotheses on correlations' (Q118335).",
+      "note": "E1 and E2 are a matched pair: identical entity and relation, differing only in count versus list, which isolates truncation handling from retrieval.",
+      "answer_shape": "truncated_list"
+    },
+    {
+      "id": "Q3",
+      "intent": "two entities intersected",
+      "question": "How many publications in MaRDI used both glmnet and glasso?",
+      "tests": [
+        "two pivots resolved from one question",
+        "repeating the pattern on one variable rather than inventing a join"
+      ],
+      "gold_sparql": "SELECT (COUNT(DISTINCT ?p) AS ?n) WHERE { ?p wdt:P1463 wd:Q20169 . ?p wdt:P1463 wd:Q19462 }",
+      "pivot_entities": [
+        "Q20169",
+        "Q19462"
+      ],
+      "required_entities": [],
+      "permitted_entities": [
+        "Q20169",
+        "Q19462"
+      ],
+      "expected_counts": {
+        "publications": 45
+      },
+      "gold_fact": "45 publications used both glmnet and glasso. A count for either package alone (680 and 557) answers a different question.",
+      "answer_shape": "count",
+      "numeric_answer": 45,
+      "numeric_tolerance_pct": 10
+    },
+    {
+      "id": "Q4",
+      "intent": "crossing from an algorithm to the software implementing it",
+      "question": "Which software in MaRDI implements LU decomposition?",
+      "tests": [
+        "the P1766 relation, which only this question exercises",
+        "linking an algorithm name rather than a package name"
+      ],
+      "gold_sparql": "SELECT ?s WHERE { wd:Q6825481 wdt:P1766 ?s }",
+      "pivot_entities": [
+        "Q6825481"
+      ],
+      "required_entities": [
+        "Q6825348",
+        "Q6825364",
+        "Q6825373",
+        "Q6825400",
+        "Q6825423",
+        "Q6825482",
+        "Q6825530",
+        "Q6825571",
+        "Q6825607",
+        "Q6825706",
+        "Q6825741"
+      ],
+      "permitted_entities": [
+        "Q6825481"
+      ],
+      "expected_counts": {
+        "implementations": 11
+      },
+      "gold_fact": "MaRDI links 11 implementations to LU decomposition, among them LAPACK, Eigen, MAGMA, SuiteSparse, PLASMA and Ginkgo.",
+      "answer_shape": "list"
+    },
+    {
+      "id": "Q5",
+      "intent": "a relation that is genuinely empty, provably",
+      "question": "How many publications in MaRDI used Mergesort?",
+      "tests": [
+        "reporting a true zero without hedging it away",
+        "not substituting the publications that DESCRIBE the algorithm"
+      ],
+      "gold_sparql": "SELECT (COUNT(DISTINCT ?p) AS ?n) WHERE { ?p wdt:P1463 wd:Q6825472 }",
+      "pivot_entities": [
+        "Q6825472"
+      ],
+      "required_entities": [],
+      "permitted_entities": [
+        "Q6825472"
+      ],
+      "answerable": true,
+      "expected_counts": {
+        "publications that used it": 0,
+        "publications that describe it": 2
+      },
+      "gold_fact": "No publication is recorded as using Mergesort: the count is zero, and here that zero is a real answer rather than a failed query, because the relation is absent from the algorithm's claims. Two publications DESCRIBE it, which is a different relation and must not be offered as the count.",
+      "note": "Unlike phase 1's unanswerable question, this zero is provable from the graph, so the harness can tell a correct zero from a broken query.",
+      "answer_shape": "count",
+      "numeric_answer": 0,
+      "numeric_tolerance_pct": 0
+    }
+  ]
+}
