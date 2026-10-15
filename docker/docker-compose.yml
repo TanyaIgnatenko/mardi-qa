@@ -10,6 +10,14 @@ services:
     ports:
       - "8501:8501"
     environment:
+      # The default backend is the auth-gated ZIB Ollama server, so the container
+      # needs its key passed through; without this the deployed app starts and
+      # then fails every question with a 401.
+      LLM_PROVIDER: ${LLM_PROVIDER:-ollama}
+      OLLAMA_API_KEY: ${OLLAMA_API_KEY:-}
+      OLLAMA_HOST: ${OLLAMA_HOST:-https://ollama.zib.de/ollama}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen3-coder-next:latest}
+      # Kept so LLM_PROVIDER=anthropic still works without editing this file.
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-sonnet-4-5}
       APP_PASSWORD: ${APP_PASSWORD:-zibmath2026}

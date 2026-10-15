@@ -17,22 +17,42 @@ ghcr.io/<owner>/<repo>:<branch>-<sha>  # immutable per-commit tag
 
 ## Runtime environment variables
 
-| Variable            | Purpose                                  | Default              |
-| ------------------- | ---------------------------------------- | -------------------- |
-| `ANTHROPIC_API_KEY` | Claude API key (or paste in the sidebar) | _(empty)_            |
-| `ANTHROPIC_MODEL`   | Claude model id                          | `claude-sonnet-4-5`  |
-| `APP_PASSWORD`      | Shared password gating the UI            | `zibmath2026`        |
+| Variable            | Purpose                                      | Default                        |
+| ------------------- | -------------------------------------------- | ------------------------------ |
+| `LLM_PROVIDER`      | `ollama` or `anthropic`                      | `ollama`                       |
+| `OLLAMA_API_KEY`    | ZIB Ollama key (or paste in the sidebar)     | _(empty)_                      |
+| `OLLAMA_HOST`       | Ollama endpoint                              | `https://ollama.zib.de/ollama` |
+| `OLLAMA_MODEL`      | Model id — see [MODEL_CHOICE.md](../MODEL_CHOICE.md) | `qwen3-coder-next:latest` |
+| `ANTHROPIC_API_KEY` | Claude key, when `LLM_PROVIDER=anthropic`    | _(empty)_                      |
+| `ANTHROPIC_MODEL`   | Claude model id                              | `claude-sonnet-4-5`            |
+| `ROUTER_ENABLED`    | `1` restores routing; off means every question goes through the graph, which is the path the evaluation measures | `0` |
+| `APP_PASSWORD`      | Shared password gating the UI                | `zibmath2026`                  |
+
+> `OLLAMA_API_KEY` is the one variable with no usable default: the ZIB server is
+> auth-gated, so without it every question fails with a 401.
 
 > `APP_PASSWORD` has a built-in default (`zibmath2026`), so the app works with no
 > configuration. Set the env var only if you want a different password.
+
+> The container loads the model on startup, which takes two to four minutes while
+> the ZIB server pages it in. Until that finishes the first page view blocks;
+> this is expected and happens once per container.
 
 ## Run the published image
 
 ```bash
 docker run --rm -p 8501:8501 \
-  -e ANTHROPIC_API_KEY=sk-ant-... \
+  -e OLLAMA_API_KEY=... \
   ghcr.io/<owner>/<repo>:latest
 # add  -e APP_PASSWORD=your-password  only if you want to override the default
+```
+
+To run against Claude instead:
+
+```bash
+docker run --rm -p 8501:8501 \
+  -e LLM_PROVIDER=anthropic -e ANTHROPIC_API_KEY=sk-ant-... \
+  ghcr.io/<owner>/<repo>:latest
 ```
 
 Open http://localhost:8501.
