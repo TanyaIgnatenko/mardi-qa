@@ -316,8 +316,17 @@ def quote_fidelity(answer: str, context_text: str) -> dict:
     # being under 20 characters and then paired its closing quote with the next
     # phrase's opening one, returning the markdown between them as the quote:
     # a link list and two line breaks reported as an unsupported citation.
-    quotes = [q for q in re.findall(r'"([^"\n]{1,300})"', answer or "")
-              if len(q) >= 20]
+    # Curly quotes count. A model that invents a property label writes it the way
+    # prose is written — *“uses algorithm”* — and a pattern looking only for the
+    # straight ASCII quote walked straight past exactly the defect this metric
+    # exists to catch, in the same run where its straight-quoted twin was caught.
+    # Floor of 12, not 20: an invented property label is short. "implements
+    # algorithm" is exactly 20 and was caught, while "uses algorithm" is 14 and
+    # walked past — the same fabrication, missed for being brief. Checked against
+    # every answer in the set, 12 adds no false positives, and lowering it
+    # further changes nothing, so the margin is real rather than tuned to taste.
+    quotes = [q for q in re.findall(r'["“]([^"“”\n]{1,300})["”]', answer or "")
+              if len(q) >= 12]
     haystack = " ".join((context_text or "").split())
     unsupported = [q for q in quotes if " ".join(q.split()) not in haystack]
     return {

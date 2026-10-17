@@ -84,6 +84,14 @@ def _truncation_note(query: str, result: SparqlResult, progress) -> str:
     if limit is None or len(result.rows) < limit:
         return ""  # everything that matched came back
 
+    # An aggregate is never truncated: COUNT returns one row holding the whole
+    # answer, so a trailing LIMIT 1 is decoration. Without this, such a query
+    # satisfied "rows == limit" and was declared truncated, and the model dutifully
+    # warned that more matches might exist — turning a complete, correct zero into
+    # a hedged one.
+    if re.search(r"\b(COUNT|SUM|AVG|MIN|MAX)\s*\(", query, re.IGNORECASE):
+        return ""
+
     counter = to_count_query(query)
     if counter:
         progress("Result hit the row limit — counting the full set…")
@@ -207,11 +215,19 @@ a property listed under "→ X" has the entity as the subject, one listed under
     query = sanitize_query(llm.complete(prompts.SPARQL_GENERATION_SYSTEM, gen_user))
     trace.queries.append(query)
 
-    # 4. Execute, retry once on failure/empty -----------------------------------
+    # 4. Execute, retry once on failure/empty/zero ------------------------------
     progress("Running SPARQL against the MaRDI endpoint…")
     result = _try_run(query, trace)
 
-    if result is None or result.is_empty:
+    # A count of zero is an empty answer wearing one row, and it was taking the
+    # successful path: `{"n": "0"}` is not is_empty, so the claims were never
+    # fetched. ANSWER_SYSTEM only permits asserting that something is absent when
+    # the entity's actual claims are in evidence, so the model had no way to earn
+    # that and hedged every true zero away — "0 results, but the relation may be
+    # stored under a different property" — which is exactly the answer the user
+    # cannot act on. Fetching the claims here lets a real zero be stated plainly
+    # and a wrong-property zero still be caught.
+    if result is None or result.is_empty or _is_zero_count(result):
         progress("No results — inspecting entity claims and retrying…")
         entity_dump = "\n\n".join(
             f"Claims of {e.qid} ({e.label}):\n{_safe_describe(e.qid)}"
@@ -232,7 +248,8 @@ Actual claims of the linked entities (use these property IDs!):
         result = _try_run(query2, trace)
 
         # 5. Fallback: answer straight from entity descriptions ------------------
-        if (result is None or result.is_empty) and trace.linked_entities:
+        if (result is None or result.is_empty or _is_zero_count(result)) \
+                and trace.linked_entities:
             trace.used_fallback = True
             trace.fallback_context = entity_dump
 
@@ -262,6 +279,14 @@ Retrieved knowledge-graph data:
 """
     trace.answer = llm.complete(prompts.ANSWER_SYSTEM, answer_user, max_tokens=1200)
     return trace
+
+
+def _is_zero_count(result: SparqlResult | None) -> bool:
+    """A single row whose only value is 0 — an aggregate that matched nothing."""
+    if result is None or len(result.rows) != 1:
+        return False
+    values = list(result.rows[0].values())
+    return len(values) == 1 and str(values[0]).strip() in ("0", "0.0")
 
 
 def _try_run(query: str, trace: PipelineTrace) -> SparqlResult | None:
