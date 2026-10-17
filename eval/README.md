@@ -48,7 +48,7 @@ records how it was picked.
 Found the right entities        1.00   1.00   1.00   1.00   1.00
 Shown the needed properties     1.00   1.00   1.00   1.00   1.00
 Built the right query            yes    yes    yes    yes    yes
-Query needed a repair             NO     NO     NO     NO     NO
+Query needed a repair             NO     NO     NO     NO    yes
 Retrieved the right rows         n/a    n/a    n/a   1.00    n/a
 Rows survived into context       n/a    n/a    n/a   1.00    n/a
 Number reached the prompt        yes    n/a    yes    n/a    yes
@@ -56,19 +56,19 @@ Lost to truncation               n/a    n/a    n/a   0.00    n/a
 Cited what it should             n/a    n/a    n/a   1.00    n/a
 Cited only what it had          1.00   1.00   1.00   1.00   1.00
 Invented identifiers               0      0      0      0      0
-Quotes unsupported by data         0      0      0      1      0
+Quotes unsupported by data         0      0      0      0      0
 Asserted the known fact          yes    yes    yes    yes    yes
 ```
 
-**What this says.** Every mechanical stage is clean: entities are linked, the
-needed relations are on offer, all five queries return what the reference
-returns, nothing needed repairing, nothing was lost to truncation, and no
-identifier was invented.
+**What this says.** Every stage is clean. Entities are linked, the needed
+relations are on offer, all five queries return what the reference returns,
+nothing was lost to truncation, no identifier or quotation was invented, and
+each answer states its known fact plainly.
 
-One real finding, on Q4: the answer put `"implements algorithm"` in quotation
-marks, while the schema it was shown says `implemented by`. The query and the
-eleven results are correct, but the quoted gloss reverses the direction of the
-relation and states something no source does.
+The repair on Q5 is expected rather than a fault. Q5 asks for a count whose
+answer is genuinely zero, and a zero now sends the pipeline to read the
+entity's own claims before answering — otherwise the model has no evidence that
+the relation is absent rather than mis-queried, and has to hedge the zero away.
 
 Note how little four of the rows are exercised — only Q4 produces a number for
 them. These five questions are a regression guard for behaviour already known
