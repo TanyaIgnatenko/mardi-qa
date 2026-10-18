@@ -22,6 +22,7 @@ import os
 import re
 import sys
 import time
+from functools import lru_cache
 from pathlib import Path
 
 for _s in (sys.stdout, sys.stderr):
@@ -60,7 +61,13 @@ JUDGE_SYSTEM = """\
 You grade one answer from a knowledge-graph question-answering system. Two
 judgments, both against the gold statement supplied.
 
-1. fact_asserted — does the answer ASSERT the gold fact as true?
+1. fact_asserted — does the answer ASSERT the gold fact as true? Judge ONLY
+   that. Extra material is not your concern: an answer that states the gold fact
+   and then adds things the question did not ask for still PASSES here, because
+   the surplus is counted separately and exactly, by metrics that do not need an
+   opinion. Asked which algorithms suit a sparse SPD system, an answer naming
+   both gold algorithms correctly plus six more was failed on this line, which
+   hid the fact that the answer the user wanted was in there.
    PASSES: the fact stated plainly, including when stated as what the graph or
    the query returned. "The query returned 1438 publications in MaRDI" asserts
    1438 — grounding a fact in the data is required of this system, not a defect,
@@ -136,6 +143,40 @@ def judge_answer(judge: LLM, q: dict, answer: str, query: str) -> dict:
         return {"error": f"bad json: {exc}"}
 
 
+def graph_labels(answer: str) -> dict[str, str]:
+    """The graph's own label for every identifier the answer cites.
+
+    Read from the graph rather than from the trace on purpose: the naming check
+    exists for the case where the query never asked for labels, so the trace is
+    exactly where they are missing.
+    """
+    return dict(_labels_for(tuple(sorted(set(sm.QID.findall(answer or ""))))))
+
+
+@lru_cache(maxsize=256)
+def _labels_for(qids: tuple[str, ...]) -> tuple[tuple[str, str], ...]:
+    """Cached, because a regrade re-asks the same question of the same graph and
+    this endpoint answers an excess of requests with a 429 that fails the run."""
+    if not qids:
+        return ()
+    query = (f"{config.SPARQL_PREFIXES}\nSELECT ?x ?xLabel WHERE {{ VALUES ?x {{ "
+             + " ".join("wd:" + q for q in qids)
+             + ' } SERVICE wikibase:label { bd:serviceParam wikibase:language "en". } }')
+    try:
+        rows = run_query(query).rows
+    except Exception:
+        return ()
+    return tuple((r.get("x", "").rsplit("/", 1)[-1], r.get("xLabel", "")) for r in rows)
+
+
+def gold_label_map(q: dict) -> dict[str, str]:
+    """{label: qid} for the entities this question expects, so a result that came
+    back as names can still be credited with having found them."""
+    required = tuple(sorted(q.get("required_entities") or ()))
+    return {" ".join(label.split()).lower(): qid
+            for qid, label in _labels_for(required) if label and label != qid}
+
+
 def measure(q: dict, trace, gold_rows: set[str] | None) -> dict:
     """Every deterministic metric for one question, from the trace alone."""
     linked = [e.qid for e in trace.linked_entities]
@@ -147,15 +188,18 @@ def measure(q: dict, trace, gold_rows: set[str] | None) -> dict:
     # alone flagged "implements algorithm" as an unsupported citation.
     context_text = "\n".join(
         " | ".join(str(v) for v in row.values()) for row in trace.context_rows
-    ) + "\n" + (trace.fallback_context or "") + "\n" + getattr(trace, "schema_text", "")
+    ) + "\n" + (trace.fallback_context or "") + "\n" + getattr(trace, "schema_text", "") \
+        + "\n" + getattr(trace, "identifier_gloss", "")
 
     return {
         "entities": sm.entity_metrics(trace.extracted, linked, q),
         "sparql": sm.sparql_metrics(trace.queries, trace.results, gold_rows, q),
-        "retrieval": sm.retrieval_metrics(trace.results, trace.context_rows, q),
+        "retrieval": sm.retrieval_metrics(trace.results, trace.context_rows, q,
+                                          gold_label_map(q)),
         "schema": sm.schema_metrics(trace.properties_shown, q),
         "sources": sm.source_metrics(trace.answer, retrieved, q, linked),
         "quotes": sm.quote_fidelity(trace.answer, context_text),
+        "naming": sm.naming_metrics(trace.answer, graph_labels(trace.answer)),
         "structure": sm.structural_validity(trace.extracted, trace.queries,
                                             trace.query_errors),
     }
@@ -272,6 +316,7 @@ def main() -> int:
                 "context_rows": trace.context_rows,
                 "properties_shown": trace.properties_shown,
                 "schema_text": trace.schema_text,
+                "identifier_gloss": trace.identifier_gloss,
                 "query_errors": trace.query_errors,
                 "used_fallback": trace.used_fallback,
                 "fallback_context": trace.fallback_context[:4000],
@@ -325,6 +370,22 @@ def _yn(x) -> str:
     return "n/a" if x is None else ("yes" if x else "NO")
 
 
+def _count(xs) -> str:
+    return "n/a" if xs is None else str(len(xs))
+
+
+def _frac(got: int, total: int) -> str:
+    return "n/a" if not total else f"{got}/{total}"
+
+
+def _extra(sources: dict) -> str:
+    """Everything cited that is not part of the answer, surplus or excluded."""
+    surplus, wrong = sources["superfluous"], sources["wrongly_cited"]
+    if surplus is None and not wrong:
+        return "n/a"  # the gold does not say what the answer should contain
+    return str(len(surplus or ()) + len(wrong or ()))
+
+
 def _summary(results: list[dict]) -> None:
     scored = [r for r in results if "metrics" in r]
     if not scored:
@@ -342,9 +403,24 @@ def _summary(results: list[dict]) -> None:
         ("Rows survived into context",    lambda m, j: _f(m["retrieval"]["context_recall"])),
         ("Number reached the prompt",     lambda m, j: _yn(m["retrieval"]["count_in_context"])),
         ("Lost to truncation",            lambda m, j: _f(m["retrieval"]["truncation_loss"])),
-        ("Cited what it should",          lambda m, j: _f(m["sources"]["source_recall"])),
-        ("Cited only what it had",        lambda m, j: _f(m["sources"]["source_precision"])),
+        # "Cited" read as quotation; this row is about portal links, and the one
+        # below it about quoted text, so they say which they mean.
+        ("Gave the needed links",         lambda m, j: _frac(m["sources"]["linked_correct"],
+                                                            m["sources"]["linked_required"])),
+        # Counted, not just scored. P1 cited both algorithms the gold asks for and
+        # six category nodes besides, and a table of recalls and verdicts showed
+        # that as failure throughout — "nothing missing, six extra" is a different
+        # state from "missed everything", and the fix for each is different too.
+        ("Missing facts from the answer", lambda m, j: _count(m["sources"]["missed"])),
+        # Surplus and wrongly-cited together, because the row answers one
+        # question — how much of this was not the answer. Splitting them hid the
+        # six category nodes in P1: naming them in the gold's excluded list moved
+        # them out of `superfluous` and the row dropped to zero while the noise
+        # was still there. The JSON keeps the two apart for diagnosis.
+        ("Extra facts, not an answer",    lambda m, j: _extra(m["sources"])),
+        ("Links came from the data",      lambda m, j: _f(m["sources"]["source_precision"])),
         ("Invented identifiers",          lambda m, j: str(len(m["sources"]["fabricated"]))),
+        ("Called an item by a wrong name", lambda m, j: str(len(m["naming"]["mislabelled"]))),
         ("Quotes unsupported by data",    lambda m, j: str(len(m["quotes"]["unsupported_quotes"]))),
         ("Asserted the known fact",       lambda m, j: _yn(j.get("fact_asserted"))),
     ]
@@ -403,6 +479,7 @@ def _regrade(path: str, by_id: dict) -> int:
             # regrading one of those yields no coverage rather than crashing.
             properties_shown = trace_data.get("properties_shown", [])
             schema_text = trace_data.get("schema_text", "")
+            identifier_gloss = trace_data.get("identifier_gloss", "")
 
         gold = trace_data.get("gold_rows")
         before = row.get("metrics", {})

@@ -34,6 +34,12 @@ from .sparql_client import (
     to_count_query,
 )
 
+# How many linked entities get their schema shown to the generator. Must cover
+# everything linking and keyword search between them produce, or the cap decides
+# which candidate is allowed to be the query's subject — and it decided wrongly
+# the moment a fourth candidate appeared.
+SCHEMA_ENTITY_LIMIT = 6
+
 
 @dataclass
 class PipelineTrace:
@@ -45,6 +51,7 @@ class PipelineTrace:
     linked_entities: list[LinkedEntity] = field(default_factory=list)
     properties_shown: list[str] = field(default_factory=list)
     schema_text: str = ""
+    identifier_gloss: str = ""
     queries: list[str] = field(default_factory=list)
     query_errors: list[str] = field(default_factory=list)
     # Rows that actually reached the answer prompt. A query capped at LIMIT 50
@@ -138,12 +145,26 @@ def answer_question(
     for item in trace.extracted.get("entities", [])[:5]:
         mention = item.get("text", "") if isinstance(item, dict) else str(item)
         kind = item.get("kind") if isinstance(item, dict) else None
+        aka = item.get("aka") or [] if isinstance(item, dict) else []
         if not mention:
             continue
-        try:
-            best = pick_best_candidate(search_entities(mention), expected_kind=kind)
-        except Exception:
-            best = None
+
+        # Every name the thing goes by, through linking rather than through the
+        # keyword fallback. A curator files MINLP under the label "MINLP" alone,
+        # so "which packages solve mixed-integer nonlinear programs" matches no
+        # label and linking finds nothing. The acronym did reach the graph, but
+        # only as a topic keyword, and that path runs solely when linking comes
+        # back empty — had linking resolved anything at all, the one term that
+        # identifies the subject would never have been tried. Keyword search also
+        # skips the type filter and the stub tie-break that linking applies.
+        best = None
+        for surface in [mention, *[a for a in aka if isinstance(a, str) and a.strip()]][:4]:
+            try:
+                best = pick_best_candidate(search_entities(surface), expected_kind=kind)
+            except Exception:
+                best = None
+            if best:
+                break
         if best:
             trace.linked_entities.append(best)
 
@@ -153,10 +174,19 @@ def answer_question(
     # call the endpoint's full-text search service inside its SPARQL, which
     # returns HTTP 500 on this deployment: every such query failed, so the branch
     # was dead and described problems could not be answered at all.
+    # Only when linking came back empty. For a while this ran unconditionally,
+    # because a wrong link could switch it off — linking matched the acronym
+    # "SPD" to an unrelated item labelled "spd" and the keyword search that had
+    # been finding the actual problem class never ran. That is fixed where it
+    # belonged: extraction now yields the full noun phrase and the right kind,
+    # and label search finds "Problem Class: Symmetric positive definite (SPD)
+    # linear systems" directly. Running it regardless cost one query per keyword,
+    # up to six a question, on questions that no longer need it — enough extra
+    # traffic to earn an HTTP 429 that fails the whole run rather than one query.
     if not trace.linked_entities:
         keywords = trace.extracted.get("keywords") or []
         if keywords:
-            progress("No entity named — searching by topic keywords…")
+            progress("No entity linked — searching by topic keywords…")
             candidates = search_by_keywords(keywords, limit=3)
             trace.keyword_candidates = [c.qid for c in candidates]
             trace.linked_entities.extend(candidates)
@@ -169,12 +199,29 @@ def answer_question(
     # zero out of 2,610 properties and the model invented one instead.
     progress("Loading the schema of the linked entities…")
     if trace.linked_entities:
-        schema_text = format_schema(trace.linked_entities[:3])
+        # Covers every linked entity, not the first three. The cap silently
+        # decided which candidate could be the query's subject: asked about a
+        # sparse SPD system, the problem class landed fourth in the list and its
+        # schema — the one carrying "solved by" — was never shown, so the query
+        # could not be built from the entity the question was actually about.
+        schema_text = format_schema(trace.linked_entities[:SCHEMA_ENTITY_LIMIT])
     else:
         # Nothing linked (topic questions, mwapi search): no entity schema exists,
         # so fall back to the verified core properties.
         schema_text = ("(no entities linked — use full-text search; core properties:)\n"
                        + _format_properties(CORE_PROPERTIES))
+
+    # The core properties go in either way. An entity's own schema describes the
+    # entity the question NAMES, never the class it ASKS FOR, and the properties
+    # of that class are then invisible: asked which publications since 2020 used
+    # SCIP for scheduling, the model saw SCIP's claims, found nothing resembling a
+    # subject classification, dropped the scheduling condition, answered about
+    # forty publications instead of three — and explained that the graph records
+    # no problem-class field, which it does, as "Mathematics Subject
+    # Classification ID" on the publications themselves.
+    schema_text += ("\n\nProperties of the classes you may need to query "
+                    "(verified against this endpoint):\n"
+                    + _format_properties(CORE_PROPERTIES))
 
     # Record the properties the model was actually offered. Both sources count:
     # the entity schema built above AND the system prompt, which names a handful
@@ -205,6 +252,7 @@ Linked MaRDI entities:
 {_format_entities(trace.linked_entities)}
 
 Topic keywords (for mwapi full-text search, if needed): {trace.extracted.get("keywords", [])}
+{_format_subject_codes(trace.extracted)}
 
 Schema of these entities — the ONLY properties you may use. Direction matters:
 a property listed under "→ X" has the entity as the subject, one listed under
@@ -263,6 +311,15 @@ Actual claims of the linked entities (use these property IDs!):
             f"SPARQL query:\n{q}\n\nResults:\n{r.to_prompt_text(config.CONTEXT_ROWS_IN_PROMPT)}"
             + (f"\n\n{note}" if note else "")
         )
+    # Recorded on the trace, not only appended to the prompt: anything the model
+    # is shown has to be inside what the quote check verifies against, or quoting
+    # it correctly counts as unsupported. Adding this block without recording it
+    # did exactly that — two category labels, copied faithfully, flagged as
+    # invented evidence.
+    trace.identifier_gloss = _identify_bare_qids(trace.context_rows, progress)
+    if trace.identifier_gloss:
+        retrieved_parts.append("What those identifiers are:\n" + trace.identifier_gloss)
+
     if trace.used_fallback:
         retrieved_parts.append(
             "Fallback — full claims of linked entities:\n" + trace.fallback_context
@@ -279,6 +336,77 @@ Retrieved knowledge-graph data:
 """
     trace.answer = llm.complete(prompts.ANSWER_SYSTEM, answer_user, max_tokens=1200)
     return trace
+
+
+def _format_subject_codes(extracted: dict) -> str:
+    """The MSC codes extraction found for the question's topics.
+
+    Carried into the generation prompt because nothing else carries it. The
+    extraction step was asked for these codes and duly returned "90B35" for
+    scheduling, but the prompt listed only the question, the target type, the
+    linked entities, the keywords and the schema — so the one value that could
+    express "for scheduling problems" as a filter never reached the model, and
+    the query came back without that condition for the third run in a row.
+    """
+    codes = []
+    for item in extracted.get("entities", []) or []:
+        if not isinstance(item, dict):
+            continue
+        msc = item.get("msc")
+        for code in ([msc] if isinstance(msc, str) else (msc or [])):
+            if isinstance(code, str) and code.strip():
+                codes.append(f'{item.get("text", "?")} = MSC {code.strip()}')
+    if not codes:
+        return ""
+    return ("Subject codes for the topics named in the question — filter with "
+            "wdt:P226 and STRSTARTS to honour them:\n  " + "\n  ".join(codes))
+
+
+_QID_IN_ROW = re.compile(r"^Q\d{2,9}$")
+
+
+def _identify_bare_qids(rows: list[dict], progress) -> str:
+    """Label, and characterise, every identifier that arrived without a name.
+
+    The generation prompt asks for labels alongside IDs and the model does not
+    always comply: asked which algorithms suit a sparse SPD system it selected
+    `?algorithm` alone, received eight bare QIDs, and named six of them MINRES,
+    GMRES, Steepest Descent and Preconditioned CG — inventions, since those six
+    are category nodes labelled "Algorithm Class: Handles dense matrices" and the
+    like. It could not have known: nothing in the rows said what they were.
+
+    The implementation and source counts come along because they are what
+    separates a method from a category. P31 does not: all eight are `algorithm`.
+    """
+    bare = {v for row in rows for v in row.values()
+            if isinstance(v, str) and _QID_IN_ROW.match(v)}
+    named = {v.rsplit("/", 1)[-1] for row in rows for v in row.values()
+             if isinstance(v, str) and "/Q" in v}
+    bare -= named
+    if not bare:
+        return ""
+
+    progress("Looking up what the returned identifiers are…")
+    query = f"""{config.SPARQL_PREFIXES}
+SELECT ?x ?xLabel (COUNT(DISTINCT ?impl) AS ?implementations)
+                  (COUNT(DISTINCT ?src) AS ?sources) WHERE {{
+  VALUES ?x {{ {' '.join('wd:' + q for q in sorted(bare)[:60])} }}
+  OPTIONAL {{ ?x wdt:P1766 ?impl . }}
+  OPTIONAL {{ ?x wdt:P286 ?src . }}
+  SERVICE wikibase:label {{ bd:serviceParam wikibase:language "en". }}
+}} GROUP BY ?x ?xLabel"""
+    try:
+        rows_out = run_query(query).rows
+    except SparqlError:
+        return ""
+
+    lines = []
+    for r in rows_out:
+        qid = r.get("x", "").rsplit("/", 1)[-1]
+        label = r.get("xLabel") or "(no label in the graph)"
+        impls, srcs = r.get("implementations", "0"), r.get("sources", "0")
+        lines.append(f"{qid} | {label} | implementations: {impls} | sources: {srcs}")
+    return "\n".join(sorted(lines))
 
 
 def _is_zero_count(result: SparqlResult | None) -> bool:

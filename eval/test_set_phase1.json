@@ -1,5 +1,5 @@
 {
-  "version": "phase1-1.4",
+  "version": "phase1-1.7",
   "purpose": "Phase 1 is an instrument check, not a model ranking: five questions chosen so that every metric in the stage-level suite computes at least once, on questions a real applied mathematician would ask. Run with the router disabled so the graph path is the only path and routing cannot confound the result. P2a and P2b are a matched pair: identical subject and first hop, differing only in whether the publication hop is required, which isolates that hop and the context cut.",
   "grading": "stage_metrics + llm_judge",
   "conditions": {
@@ -33,8 +33,19 @@
         "Q6825756",
         "Q6825911"
       ],
-      "gold_fact": "Cholesky (LL^T) factorization and Conjugate Gradient for sparse SPD systems are the algorithms MaRDI links to this problem class. The six 'Algorithm Class' nodes returned alongside them are taxonomy, not methods; naming them as answers is noise.",
-      "note": "superfluous_entities are genuinely retrieved and genuinely linked, but they are classification nodes rather than methods. Citing them should cost precision, not count as fabrication."
+      "gold_fact": "Cholesky (LL^T) factorization and Conjugate Gradient for sparse SPD systems are the algorithms MaRDI links to this problem class.",
+      "note": "superfluous_entities are genuinely retrieved and genuinely linked, but they are classification nodes rather than methods. Citing them should cost precision, not count as fabrication.",
+      "excluded_from_sources": [
+        "Q6825429",
+        "Q6825460",
+        "Q6825687",
+        "Q6825713",
+        "Q6825756",
+        "Q6825911"
+      ],
+      "pivot_entities": [
+        "Q6825781"
+      ]
     },
     {
       "id": "P2a",
@@ -78,6 +89,9 @@
         "Q16191",
         "Q17125",
         "Q18306"
+      ],
+      "pivot_entities": [
+        "Q16962"
       ]
     },
     {
@@ -91,7 +105,7 @@
         "the only question where truncation certainly bites — the solvers carry thousands of publication links",
         "whether a stated total was counted or inferred from the rows shown"
       ],
-      "gold_sparql": "SELECT ?s ?sLabel (COUNT(DISTINCT ?p) AS ?pubs) WHERE { wd:Q16962 wdt:P1458 ?s . OPTIONAL { ?p wdt:P1463 ?s } SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". } } GROUP BY ?s ?sLabel",
+      "gold_sparql": "SELECT ?s ?sLabel ?p ?pLabel WHERE { wd:Q16962 wdt:P1458 ?s . OPTIONAL { ?s wdt:P286 ?p . } SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". } }",
       "required_entities": [
         "Q13835",
         "Q12838",
@@ -142,6 +156,9 @@
         "Q16191",
         "Q17125",
         "Q18306"
+      ],
+      "pivot_entities": [
+        "Q16962"
       ]
     },
     {
@@ -153,7 +170,7 @@
         "two relation types in one answer: 'contains' (P1560) and 'discretized by' (P1656)",
         "recall over a 13-element set, below the context cut, so retrieval is not the bottleneck"
       ],
-      "gold_sparql": "SELECT ?c ?cLabel WHERE { wd:Q6675396 wdt:P1560 ?c . SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". } }",
+      "gold_sparql": "SELECT ?c ?cLabel WHERE { { wd:Q6675396 wdt:P1560 ?c } UNION { wd:Q6675396 wdt:P1656 ?c } SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". } }",
       "gold_sparql_discretization": "SELECT ?d ?dLabel WHERE { wd:Q6675396 wdt:P1656 ?d . SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". } }",
       "required_entities": [
         "Q6534329",
@@ -178,7 +195,7 @@
         "contains": 13,
         "discretized by": 1
       },
-      "gold_fact": "The drift-diffusion system describes semi-classical transport of free charge carriers in semiconductors. Equations: Poisson's equation for the electric potential, continuity equations for electrons and for holes, current density relations for electrons and for holes, and Boltzmann approximations for electrons and for holes. Boundary conditions: Dirichlet and Neumann for the electric potential, and Dirichlet and Neumann for the quasi-Fermi potentials of electrons and holes. Discretized by the Scharfetter-Gummel scheme (Q6675388). The answer must close by limiting completeness to what the graph records.",
+      "gold_fact": "The drift-diffusion system describes semi-classical transport of free charge carriers in semiconductors. Equations: Poisson's equation for the electric potential, continuity equations for electrons and for holes, current density relations for electrons and for holes, and Boltzmann approximations for electrons and for holes. Boundary conditions: Dirichlet and Neumann for the electric potential, and Dirichlet and Neumann for the quasi-Fermi potentials of electrons and holes. Discretized by the Scharfetter-Gummel scheme (Q6675388).",
       "excluded_from_gold": {
         "described_by_source": [
           "the van Roosbroeck paper and two others — the question does not ask for literature"
@@ -187,7 +204,10 @@
           "semiconductor charge neutrality, thermodynamic equilibrium, current voltage"
         ]
       },
-      "note": "The model is named in the question on purpose. 'charge transport model' (Q6675380) and 'diffusion model' (Q6675394) also exist, so asking by phenomenon would leave three candidates and make the gold arguable. Describing a problem without naming it is already tested by P1. No 'assumptions' sub-question: the graph types nothing — equations, approximations and boundary conditions all arrive through the same 'contains' property — so grading assumptions would measure agreement with our own convention rather than retrieval."
+      "note": "The model is named in the question on purpose. 'charge transport model' (Q6675380) and 'diffusion model' (Q6675394) also exist, so asking by phenomenon would leave three candidates and make the gold arguable. Describing a problem without naming it is already tested by P1. No 'assumptions' sub-question: the graph types nothing — equations, approximations and boundary conditions all arrive through the same 'contains' property — so grading assumptions would measure agreement with our own convention rather than retrieval.",
+      "pivot_entities": [
+        "Q6675396"
+      ]
     },
     {
       "id": "P4",
@@ -225,7 +245,8 @@
         "substituting MINLPLib or the optimization benchmarks as if they answered the question",
         "reporting 'nothing found' without distinguishing an empty result from genuine absence"
       ],
-      "note": "This is not an empty-retrieval test. Twenty datasets match 'sparse' and seven match 'solver', all real and all retrievable, and none of them answers the question. The failure to catch is a plausible substitution, not a hallucination from nothing."
+      "note": "This is not an empty-retrieval test. Twenty datasets match 'sparse' and seven match 'solver', all real and all retrievable, and none of them answers the question. The failure to catch is a plausible substitution, not a hallucination from nothing.",
+      "pivot_entities": []
     },
     {
       "id": "P5",
@@ -259,7 +280,10 @@
         "answering with the 186 (date only) or 23 (topic only) subsets instead of the 3 that satisfy both",
         "falling back on the overall SCIP author ranking (Berthold, Koch, Pfetsch), which is real but answers a different question"
       ],
-      "note": "The trap is the second half of the question. The graph answers the first half exactly and makes the second half unanswerable, which is the harder thing to get right."
+      "note": "The trap is the second half of the question. The graph answers the first half exactly and makes the second half unanswerable, which is the harder thing to get right.",
+      "pivot_entities": [
+        "Q13835"
+      ]
     }
   ]
 }

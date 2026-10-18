@@ -157,7 +157,34 @@ def sparql_metrics(queries: list[str], results: list, gold_rows: set[str] | None
 
 # ----------------------------------------------------- retrieval vs context ---
 
-def retrieval_metrics(results: list, context_rows: list[dict], gold: dict) -> dict:
+def qids_in_rows_or_labels(rows: Iterable[dict],
+                           label_to_qid: dict[str, str] | None = None) -> set[str]:
+    """Identifiers a result carries, whether as identifiers or as names.
+
+    SPARQL returns only the variables the SELECT projects. A query that matched
+    the right thirteen formulas and wrote `SELECT ?formulaLabel` returns their
+    names and no identifiers at all — the binding existed inside the engine and
+    was never asked for. Scored on identifiers alone that read as retrieval
+    failure, 0.00, for a query that had found exactly the right rows.
+
+    Retrieval is about whether the query found the right things, so it is
+    measured here regardless of how the answer was projected. The cost of a
+    missing identifier is real but belongs to the citation metrics: without one
+    the answer cannot carry a portal link the reader can check.
+    """
+    found = qids_in_rows(rows)
+    if not label_to_qid:
+        return found
+    for row in rows:
+        for value in row.values():
+            qid = label_to_qid.get(" ".join(str(value).split()).lower())
+            if qid:
+                found.add(qid)
+    return found
+
+
+def retrieval_metrics(results: list, context_rows: list[dict], gold: dict,
+                      label_to_qid: dict[str, str] | None = None) -> dict:
     """Recall at two cut points, and the loss between them.
 
     retrieval_recall asks whether the query found the gold nodes. context_recall
@@ -169,8 +196,8 @@ def retrieval_metrics(results: list, context_rows: list[dict], gold: dict) -> di
     retrieved = set()
     for r in results:
         if hasattr(r, "rows"):
-            retrieved |= qids_in_rows(r.rows)
-    in_context = qids_in_rows(context_rows)
+            retrieved |= qids_in_rows_or_labels(r.rows, label_to_qid)
+    in_context = qids_in_rows_or_labels(context_rows, label_to_qid)
 
     retrieval_recall = _ratio(len(retrieved & required), len(required))
     context_recall = _ratio(len(in_context & required), len(required))
@@ -289,6 +316,10 @@ def source_metrics(answer: str, retrieved_qids: set[str], gold: dict,
 
     return {
         "cited_count": len(cited),
+        # Counts beside the ratio: "5/10" says how much was at stake, where 0.50
+        # cannot tell one link missing out of two from fifty out of a hundred.
+        "linked_correct": len(correct),
+        "linked_required": len(required),
         "source_recall": _ratio(len(correct), len(required)),
         # Precision asks what share of the citations were legitimate, so the
         # numerator is everything allowed — not only the required set. Scoring it
@@ -298,10 +329,84 @@ def source_metrics(answer: str, retrieved_qids: set[str], gold: dict,
         "source_precision": _ratio(len(cited & allowed), len(cited)),
         "missed": sorted(required - cited),
         "wrongly_cited": sorted(cited & excluded),
-        "superfluous": sorted(superfluous),
+        # None, not an empty list, when the gold does not say what the answer
+        # should contain. Without a required set every citation counts as
+        # surplus, and the easy set duly reported five legitimate example
+        # publications and the package the question was about as "extra facts".
+        "superfluous": sorted(superfluous) if required else None,
         # Not in the gold and never retrieved — the answer cannot have got it
         # from the graph.
         "fabricated": sorted(fabricated),
+    }
+
+
+_NAME_STOP = {"the", "a", "an", "of", "for", "and", "or", "to", "in", "with", "on",
+              "class", "algorithm", "software", "method", "using", "based",
+              "from", "its", "it", "paper", "described", "graph", "data",
+              "information", "available", "further", "about", "their", "this"}
+
+
+def _content_words(text: str) -> set[str]:
+    return {w for w in re.findall(r"[a-z0-9]+", (text or "").lower())
+            if len(w) > 2 and w not in _NAME_STOP}
+
+
+def _naming_chunks(answer: str) -> list[str]:
+    """The answer split into list items and paragraphs.
+
+    Scope matters more than it sounds. A line-wide check called MAMSolver a
+    mismatch for being named one line above its id; a 160-character window let a
+    neighbouring bullet's words vouch for the wrong entity and hid five real
+    mislabellings. A list item is the unit in which a model names one thing.
+    """
+    chunks, current = [], []
+    for line in (answer or "").splitlines():
+        starts_item = re.match(r"\s*([-*+]|\d+[.)])\s", line)
+        if starts_item or not line.strip():
+            if current:
+                chunks.append("\n".join(current))
+            current = [line] if line.strip() else []
+        else:
+            current.append(line)
+    if current:
+        chunks.append("\n".join(current))
+    return chunks
+
+
+def naming_metrics(answer: str, labels: dict[str, str]) -> dict:
+    """Does the name the answer gives an identifier match the graph's own label?
+
+    Fabricated identifiers were already caught; fabricated *names* for real ones
+    were not. Asked which algorithms suit a sparse SPD system, an answer returned
+    the eight nodes the graph links and presented six of them as MINRES, GMRES,
+    Steepest Descent and Preconditioned CG, complete with convergence properties.
+    Every identifier was genuine and retrieved, so nothing flagged it — but those
+    six are category nodes labelled "Algorithm Class: Handles dense matrices" and
+    the like, and the names were invented wholesale.
+
+    `labels` comes from the graph, not from the run, because the defect appears
+    precisely when the query forgot to ask for labels and the model filled the
+    silence.
+    """
+    mislabelled = []
+    for chunk in _naming_chunks(answer):
+        body = re.sub(r"https?://\S+", " ", chunk)
+        said = _content_words(QID.sub(" ", body))
+        for qid in dict.fromkeys(QID.findall(body)):
+            label = labels.get(qid)
+            # An entity with no English label hands back its own id, leaving
+            # nothing for the answer to contradict.
+            if not label or label == qid:
+                continue
+            if not _content_words(label) & said:
+                mislabelled.append({"qid": qid, "graph_label": label,
+                                    "answer_said": " ".join(body.split())[:90]})
+    checked = [q for q in dict.fromkeys(QID.findall(answer or ""))
+               if labels.get(q) and labels[q] != q]
+    return {
+        "names_checked": len(checked),
+        "mislabelled": mislabelled,
+        "naming_fidelity": _ratio(len(checked) - len(mislabelled), len(checked)),
     }
 
 

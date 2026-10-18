@@ -91,7 +91,8 @@ You extract named entities from user questions about the MaRDI mathematical
 knowledge graph (software packages, publications, authors, mathematical topics).
 
 Return STRICT JSON, nothing else:
-{"entities": [{"text": "<surface form>", "kind": "<kind>"}, ...],
+{"entities": [{"text": "<surface form>", "kind": "<kind>",
+               "aka": ["<other name for the SAME thing>", ...]}, ...],
  "target_type": "<kind the ANSWER consists of>",
  "keywords": ["<topic keyword>", ...]}
 
@@ -110,6 +111,18 @@ Return STRICT JSON, nothing else:
     model      a mathematical model — drift-diffusion, SEIR
     software   a package, solver or library — SCIP, ggplot2
     concept    a general mathematical notion with no profile of its own
+
+  A question that describes the thing it needs solved is naming a task, however
+  it is phrased. "I have a large sparse system where the matrix is symmetric and
+  positive definite" is the task "sparse symmetric positive definite linear
+  system" — the graph files it as a problem class, and calling it a concept sends
+  the search to a profile that holds nothing of the sort, so the right item is
+  rejected on type and never reaches the query.
+
+  Extract the whole noun phrase, not the adjectives on their own. "symmetric
+  positive definite" is a property; "symmetric positive definite linear system"
+  is the thing the graph holds. The shorter form also collides: it reduces to the
+  acronym SPD, and an R package is labelled "spd".
   Many names are ambiguous in this graph — "bootstrap" is both an R
   package and a statistical method, "Mergesort" is both an algorithm item and a
   generic concept — so the kind decides which item the name refers to.
@@ -120,8 +133,32 @@ Return STRICT JSON, nothing else:
   involve?" it is "formula" — the question asks what the model is made of, NOT
   for papers about it, so "publication" would send the query to the wrong
   relation entirely.
-- "keywords": topical search terms, used to search the graph by label when the
-  question describes something it does not name.
+- "aka": the same thing under its other names, above all the short form of a
+  spelled-out term and the spelled-out form of a short one. Graph labels are
+  written whichever way the curator preferred, and only one of them is in the
+  question: "mixed-integer nonlinear programs" is filed under the label "MINLP"
+  and nothing else, so a question that spells it out matches no label at all
+  unless you supply "MINLP" here. Give "SPD" for "symmetric positive definite",
+  "CG" for "conjugate gradient", and the expansion when the question uses the
+  acronym. Only genuine other names for that same item — not related terms, not
+  narrower or broader ones. Omit the field when there is no other name.
+- "msc": for an entity that is a mathematical subject or problem class, its
+  MSC2020 code, as specific as you are sure of — "90B35" for scheduling, "65F10"
+  for iterative solution of linear systems. Publications in this graph carry
+  these codes, and they are the only way to filter by topic: asked which
+  publications since 2020 used SCIP for scheduling, a query without the code
+  returned forty publications instead of three, and the answer then reported the
+  most frequent authors of the wrong set. Omit the field if no code applies.
+- "keywords": terms for finding the thing the question is ABOUT, used to search
+  the graph by label when the question describes something it does not name.
+  Never put a candidate answer here. Asked which algorithms suit a sparse SPD
+  system, keywords of "conjugate gradient" and "Cholesky" return those two
+  algorithms and bury the problem class that links to them, so the query gets
+  built from an algorithm instead of from the problem. Describe the subject:
+  "sparse linear system", "symmetric positive definite". Keep the wording of the
+  question rather than a shortened form — a label holding "symmetric positive
+  definite" is not found by searching "positive definite" alone when commoner
+  terms outrank it.
 "entities" should be empty only when the question truly refers to nothing the
 graph could hold; "target_type" may be "other" when no particular kind of answer
 is asked for.
@@ -179,6 +216,15 @@ endpoint. Do not substitute a different PID because it sounds more apt.
   Restricting by publication year:
     ?pub wdt:P1463 wd:<QID> ; wdt:P28 ?d . FILTER(YEAR(?d) >= 2015)
 
+  Restricting by subject — publications carry MSC codes, and this is the only
+  way to filter by topic. Use the code the extraction step supplies, with
+  STRSTARTS so a broader code still matches the finer ones beneath it:
+    ?pub wdt:P1463 wd:<QID> ; wdt:P28 ?d ; wdt:P226 ?m .
+    FILTER(YEAR(?d) >= 2020 && STRSTARTS(?m, "90B35"))
+  Dropping this condition because the subject looks unrepresentable is wrong:
+  the topic is in the data, and without the filter a three-publication answer
+  comes back as forty.
+
   Who maintains / authored a package:
     wd:<PKG> wdt:P19 ?maintainer .     # maintained by
     wd:<PKG> wdt:P16 ?author .         # author (linked person)
@@ -186,6 +232,38 @@ endpoint. Do not substitute a different PID because it sounds more apt.
   What a package imports / depends on:
     wd:<PKG> wdt:P585 ?imported .      # imports
     wd:<PKG> wdt:P342 ?dependency .    # depends on software (usually just R)
+
+  A question with two parts is still ONE query. Join the relations with UNION
+  rather than answering half of it — asked what a model contains AND how it is
+  discretized, a query using only P1560 returned the 13 equations and left the
+  scheme out, and the answer then said no discretization was recorded:
+    SELECT ?x ?xLabel WHERE {
+      { wd:<MODEL> wdt:P1560 ?x } UNION { wd:<MODEL> wdt:P1656 ?x }
+      SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
+    }
+
+  Something about the things you found — two hops, also one query. Asked which
+  packages solve a problem AND which papers describe them:
+    SELECT ?sw ?swLabel ?pub ?pubLabel WHERE {
+      wd:<PROBLEM_QID> wdt:P1458 ?sw .
+      OPTIONAL { ?sw wdt:P286 ?pub . }
+      SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
+    }
+  OPTIONAL, not a plain pattern: without it a solver with no paper drops out of
+  the result entirely, taking a correct answer with it.
+
+  Which software solves a class of problem — the problem class is the SUBJECT:
+    wd:<PROBLEM_QID> wdt:P1458 ?software .
+
+  P1458 is labelled "similar software" and the name sounds mutual, but the
+  curators use it one way: the outgoing arrows from a problem class are the
+  solvers someone listed for it. The incoming arrows are unrelated packages that
+  mention the topic. For MINLP the 20 outgoing links are BARON, SCIP, Bonmin,
+  Ipopt and the rest; the 46 incoming ones include an automatic-differentiation
+  library, interval arithmetic and a one-dimensional root finder, and they miss
+  BARON, SCIP, CPLEX, Gurobi and Ipopt entirely. Write the problem class on the
+  left. Do not UNION the two directions: that returns both the solvers and the
+  noise.
 
 Return ONLY the SPARQL query. No markdown fences, no explanation.
 """
@@ -219,13 +297,32 @@ Return ONLY the SPARQL query. No markdown fences, no explanation.
 
 ANSWER_SYSTEM = """\
 You answer the user's question using ONLY the retrieved knowledge-graph data
-below. Rules:
+below.
+
+WRITE THE ANSWER AND STOP. Never explain your own reasoning or decisions. The
+answer contains what the reader asked for, and nothing about how it was reached.
+
+Never use the phrase "retrieved items". Write as if you simply know the answer.
+
+Rules:
+- Lead with the name. "Cholesky (LL^T) factorization (Q6825339)", never
+  "Q6825339: Cholesky…" — an identifier is a reference, not a title.
 - Ground every claim in the retrieved rows/claims; do not use outside knowledge
   beyond connective common sense. If the data is insufficient, say so plainly
   and state what was retrieved.
 - Mention MaRDI item IDs (Qxxx) for the key entities so the user can verify
   them on the portal (https://portal.mardi4nfdi.de/wiki/Item:Qxxx).
 - Be concise and direct; use a short list only if the answer is naturally a list.
+
+SOME NODES ARE CATEGORIES, NOT ANSWERS. The graph mixes concrete things with the
+classes they are grouped by, and gives both the same `instance of` type, so only
+the label and the claims tell them apart. A node labelled "Algorithm Class:
+Handles sparse matrices" or "Problem Class: ..." is a classification; a node with
+implementations and describing literature is a real method, package or paper.
+When the retrieved rows carry a "What those identifiers are" block, read it: the
+implementation and source counts are there for this judgement.
+
+Answer with the concrete things. Leave the categories out of the answer entirely.
 
 AN EMPTY RESULT IS NOT A FACT. If the query returned no rows, that is evidence
 the query failed, NOT evidence the graph is empty. The two are indistinguishable

@@ -9,6 +9,7 @@ Key idea: we never hardcode MaRDI property IDs. Instead we
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from functools import lru_cache
 
@@ -55,7 +56,63 @@ def search_entities(mention: str, limit: int = 5) -> list[LinkedEntity]:
                 description=hit.get("description", ""),
             )
         )
+    out.extend(_search_labels_by_words(mention, {e.qid for e in out}, limit))
     return out
+
+
+@lru_cache(maxsize=256)
+def _label_word_hits(mention: str, limit: int) -> tuple[tuple[str, str, str], ...]:
+    """Cached half of the label search: the same phrase asks the same question.
+
+    Worth caching because a run repeats mentions across its questions and across
+    reruns, and because this endpoint rate-limits: one HTTP 429 fails an entire
+    twenty-minute run, not the single query that earned it.
+    """
+    words = [w for w in re.findall(r"[A-Za-z0-9]+", mention.lower())
+             if len(w) > 2 and w not in _LABEL_STOPWORDS]
+    if len(words) < 2:
+        return ()  # one word is what wbsearchentities already does well
+    filters = "\n  ".join(f'FILTER(CONTAINS(LCASE(?l), "{w}"))' for w in words[:6])
+    # Scoped to the topic profiles. Unscoped, the filters scan every label in the
+    # graph — millions, most of them publication titles — and the endpoint times
+    # out, which this function then reports as "no candidates found".
+    profile_values = " ".join(f"wd:{PROFILES[p]}" for p in TOPIC_PROFILES if p in PROFILES)
+    query = f"""{config.SPARQL_PREFIXES}
+SELECT DISTINCT ?x ?l ?desc WHERE {{
+  VALUES ?prof {{ {profile_values} }}
+  ?x wdt:P1460 ?prof ; rdfs:label ?l .
+  FILTER(LANG(?l) = "en")
+  {filters}
+  OPTIONAL {{ ?x schema:description ?desc . FILTER(LANG(?desc) = "en") }}
+}}
+LIMIT {limit}"""
+    try:
+        rows = run_query(query).rows
+    except Exception:
+        return ()
+    return tuple((r.get("x", "").rsplit("/", 1)[-1], r.get("l", ""), r.get("desc", ""))
+                 for r in rows)
+
+
+def _search_labels_by_words(mention: str, seen: set[str], limit: int) -> list[LinkedEntity]:
+    """Find labels containing every content word of the mention, in any order.
+
+    wbsearchentities matches from the start of a label, and MaRDI prefixes a
+    whole class of items — "Problem Class: Symmetric positive definite (SPD)
+    linear systems", "Algorithm Class: Handles sparse matrices". Those items are
+    unreachable by searching what they are about: no surface form of "symmetric
+    positive definite linear system" is a prefix of that label, nor even a
+    contiguous substring of it, since "(SPD)" sits in the middle. Asked for
+    algorithms for such a system, linking returned nothing and the query had to
+    be built from whatever a keyword search happened to surface.
+    """
+    return [LinkedEntity(mention=mention, qid=qid, label=label, description=desc)
+            for qid, label, desc in _label_word_hits(mention, limit)
+            if qid and qid not in seen]
+
+
+_LABEL_STOPWORDS = {"the", "and", "for", "with", "that", "this", "its", "are",
+                    "was", "were", "has", "have", "from", "into", "where"}
 
 
 def candidate_facts(qids: list[str]) -> dict[str, dict]:
@@ -359,12 +416,21 @@ LIMIT {limit * 2}"""
     # Rank by how much of the question each label covers: a label matching three
     # of the terms describes the asked-about thing far better than one matching a
     # single common word.
-    def score(e: LinkedEntity) -> tuple[int, int]:
-        label = e.label.lower()
+    def score(e: LinkedEntity) -> tuple[int, int, int]:
+        label = e.label.lower().strip()
         matched = [t for t in terms if t in label]
-        return (len(matched), max((len(t) for t in matched), default=0))
+        # A label that IS one of the keywords outranks any number of partial
+        # matches on common ones. Asked which packages solve MINLP, the keywords
+        # were "large-scale", "MINLP" and "solver": PETSc/TAO matched two of the
+        # three somewhere inside a long descriptive label and won, while Q16962 —
+        # labelled exactly "MINLP", the item the whole question is about — placed
+        # outside the top three and never reached the query. Matching a generic
+        # word is resemblance; being the word is identification.
+        exact = 1 if any(label == t for t in terms) else 0
+        return (exact, len(matched), max((len(t) for t in matched), default=0))
 
-    return sorted(found.values(), key=lambda e: (-score(e)[0], -score(e)[1], e.qid))[:limit]
+    return sorted(found.values(),
+                  key=lambda e: (-score(e)[0], -score(e)[1], -score(e)[2], e.qid))[:limit]
 
 
 # ------------------------------------------------------------------ schema ---
