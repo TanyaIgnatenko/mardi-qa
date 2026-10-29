@@ -79,8 +79,8 @@ names + descriptions). Rules:
 - The retrieval covers ~{total} loosely matching packages; you see only the
   top-ranked ones. Say clearly that these are top examples, and give the
   approximate total.
-- Mention MaRDI item IDs (Qxxx) so the user can verify each package at
-  https://portal.mardi4nfdi.de/wiki/Item:Qxxx.
+- Mention MaRDI item IDs so the user can verify each package on the portal,
+  at an address built from the identifier itself.
 - Skip retrieved packages whose description is clearly irrelevant to the
   question — BM25 matches words, not meaning.
 - Be concise: a short intro sentence, then a compact list.
@@ -213,8 +213,14 @@ endpoint. Do not substitute a different PID because it sounds more apt.
   variable):
     ?pub wdt:P1463 wd:<QID_A> . ?pub wdt:P1463 wd:<QID_B> .
 
-  Restricting by publication year:
-    ?pub wdt:P1463 wd:<QID> ; wdt:P28 ?d . FILTER(YEAR(?d) >= 2015)
+  Restricting by publication year — the FILTER is its own statement, AFTER the
+  full stop that closes the triple list. A semicolon continues the list of
+  properties of one subject, and a FILTER is not a property, so putting one
+  between two semicolons is a syntax error the endpoint rejects with HTTP 400:
+    ?pub wdt:P1463 wd:<QID> ; wdt:P28 ?d .
+    FILTER(YEAR(?d) >= 2015)
+  Not this:
+    ?pub wdt:P1463 wd:<QID> ; wdt:P28 ?d ; FILTER(YEAR(?d) >= 2015) ; wdt:P226 ?m .
 
   Restricting by subject — publications carry MSC codes, and this is the only
   way to filter by topic. Use the code the extraction step supplies, with
@@ -310,8 +316,13 @@ Rules:
 - Ground every claim in the retrieved rows/claims; do not use outside knowledge
   beyond connective common sense. If the data is insufficient, say so plainly
   and state what was retrieved.
-- Mention MaRDI item IDs (Qxxx) for the key entities so the user can verify
-  them on the portal (https://portal.mardi4nfdi.de/wiki/Item:Qxxx).
+- Mention MaRDI item IDs for the key entities so the user can verify them on the
+  portal. Build each address from the identifier you are citing, as in
+  https://portal.mardi4nfdi.de/wiki/Item:Q13835 — an address is only useful if
+  it leads to the item you mean.
+- Name every identifier you mention. A bare identifier tells the reader nothing;
+  give the label the data carries, and if it carries none, say so rather than
+  listing the identifier alone as an example.
 - Be concise and direct; use a short list only if the answer is naturally a list.
 
 SOME NODES ARE CATEGORIES, NOT ANSWERS. The graph mixes concrete things with the
@@ -323,6 +334,17 @@ When the retrieved rows carry a "What those identifiers are" block, read it: the
 implementation and source counts are there for this judgement.
 
 Answer with the concrete things. Leave the categories out of the answer entirely.
+
+EVERY ROW YOU WERE GIVEN ALREADY PASSED EVERY CONDITION. A FILTER is applied
+before results are returned, so a row cannot be present and fail it. If the
+query filtered for MSC 90B35 and three publications came back, those three are
+the answer — they satisfy the filter by construction, and there is no reading
+under which they "appear only because of the other conditions". Asked which
+publications since 2020 used SCIP for scheduling, a correct query returned
+exactly the right three and the answer said none were found.
+
+Count what is in front of you. The number of distinct things in the rows is the
+answer to "how many", not a figure to be doubted.
 
 AN EMPTY RESULT IS NOT A FACT. If the query returned no rows, that is evidence
 the query failed, NOT evidence the graph is empty. The two are indistinguishable
@@ -356,8 +378,16 @@ the graph's own wording and both would send a reader to a query returning
 nothing. The safe version of a sentence you cannot get right is the one you
 leave out.
 
-Item IDs (Qxxx) stay — they are the entities the user can look up, and they are
+Item IDs stay — they are the entities the user can look up, and they are
 what makes the answer checkable.
+
+EVERY ROW IS AN ANSWER. If a row came back, what it holds belongs in the answer —
+all of it, not a representative few. A summarising sentence is for the things the
+rows do NOT cover, never a way to stop listing: writing that thirteen packages
+"lack linked publications or have none listed in the retrieved data" was false
+for three of them, whose papers were sitting in the rows, and the two readings
+offered — absent from the graph, or merely not shown — are not equally true. You
+can tell which: a row is evidence, its absence is not.
 
 NEVER PRESENT A ROW COUNT AS A TOTAL. The number of rows in a result is bounded
 by the query's LIMIT and by how many are displayed; it is not how many things

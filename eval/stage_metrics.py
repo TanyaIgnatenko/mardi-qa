@@ -311,7 +311,11 @@ def source_metrics(answer: str, retrieved_qids: set[str], gold: dict,
     excluded = set(gold.get("excluded_from_sources", []))
 
     correct = cited & required
-    superfluous = cited & allowed - required - excluded
+    # Surplus is what the gold neither requires nor permits. Subtracting only the
+    # required set made `permitted_entities` decorative: the twelve authors a
+    # question explicitly asks for, and the solvers that answer the first half of
+    # another, were counted as extra facts while the gold named them as expected.
+    superfluous = cited & allowed - required - permitted_qids - excluded - set(linked_qids)
     fabricated = cited - allowed - excluded
 
     return {

@@ -33,9 +33,35 @@ counting as zero.
 
 ## The questions
 
-Five questions, in [`test_set_easy.json`](test_set_easy.json). Each carries the
-reference SPARQL that produces its answer, so the expected result is re-measured
-against the live graph on every run instead of being frozen in the file.
+Two sets. Each question carries the reference SPARQL that produces its answer, so
+the expected result is re-measured against the live graph on every run instead of
+being frozen in the file.
+
+**Regression set** — five single-hop questions in
+[`test_set_easy.json`](test_set_easy.json), all of them things the pipeline is
+known to answer. Their job is to catch a change that breaks working behaviour.
+
+| | |
+|---|---|
+| Q1 | How many publications in MaRDI used the software BayesDA? |
+| Q2 | Which publications in MaRDI used the software BayesDA? |
+| Q3 | How many publications in MaRDI used both glmnet and glasso? |
+| Q4 | Which software in MaRDI implements LU decomposition? |
+| Q5 | How many publications in MaRDI used Mergesort? |
+
+**Diagnostic set** — six questions in
+[`test_set_phase1.json`](test_set_phase1.json), written to fail. They need two or
+three relations, a filter, or an honest refusal, and every defect listed in the
+commit history was found by one of them.
+
+| | | what it demands |
+|---|---|---|
+| P1 | I have a large sparse system where the matrix is symmetric and positive definite. Which algorithms should I consider? | a problem described, not named; the answer must tell a method from a category |
+| P2a | Which software packages can solve large-scale mixed-integer nonlinear programs? | the one relation that carries the solver list, in the right direction |
+| P2b | Which software packages can solve large-scale mixed-integer nonlinear programs, and which papers describe them? | two hops in one query |
+| P3 | What is the drift-diffusion model for semiconductors, which equations and boundary conditions does it involve, and how is it discretized? | two relations joined with UNION |
+| P4 | Are there benchmark datasets for testing sparse linear solvers? | unanswerable, with plausible distractors — the answer must decline |
+| P5 | Which publications since 2020 use SCIP for scheduling problems, and who are the most frequent authors? | three conditions at once, and no most-frequent author exists |
 
 ## Current results
 

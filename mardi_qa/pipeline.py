@@ -17,6 +17,7 @@ from dataclasses import dataclass, field
 from . import config, prompts
 from .entity_linking import (
     CORE_PROPERTIES,
+    PROFILES,
     LinkedEntity,
     describe_entity,
     format_schema,
@@ -222,6 +223,19 @@ def answer_question(
     schema_text += ("\n\nProperties of the classes you may need to query "
                     "(verified against this endpoint):\n"
                     + _format_properties(CORE_PROPERTIES))
+
+    # The classes themselves, by identifier. Without them a question about a kind
+    # of thing rather than a named thing has nothing to filter on, and the model
+    # supplies an identifier from memory: asked whether benchmark datasets exist,
+    # it filtered on wd:Q1172288 "instance of dataset", which in this graph is a
+    # paper about general relativity. The query returned nothing, the answer
+    # declared the graph holds no datasets at all — it holds some 16,000 — and
+    # sent the reader to that paper's portal page to check.
+    schema_text += ("\n\nClass identifiers — filter a kind of thing with "
+                    "wdt:P1460 (MaRDI profile type), never with a Pxx/Qxx you "
+                    "recall from elsewhere:\n"
+                    + "\n".join(f"  wd:{qid}  {name}"
+                                for name, qid in sorted(PROFILES.items())))
 
     # Record the properties the model was actually offered. Both sources count:
     # the entity schema built above AND the system prompt, which names a handful

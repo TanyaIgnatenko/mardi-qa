@@ -1,0 +1,753 @@
+{
+  "version": "v2-staged-1.0",
+  "purpose": "The 50-question set, rewritten so the stage metrics apply: each question's gold query is derived from its shape and subject, and the expected result is re-measured against the graph on every run.",
+  "questions": [
+    {
+      "id": "P01",
+      "intent": "traversal",
+      "question": "Which publications in MaRDI used the software BayesDA?",
+      "gold_sparql": "SELECT ?p ?pLabel WHERE { ?p wdt:P1463 wd:Q22960 . SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". } }",
+      "pivot_entities": [
+        "Q22960"
+      ],
+      "gold_fact": "Names concrete MaRDI publications that use BayesDA (1438 exist) and does not invent titles.",
+      "answer_shape": "truncated_list",
+      "expected_counts": {
+        "publications": 1438
+      }
+    },
+    {
+      "id": "P02",
+      "intent": "traversal",
+      "question": "Which publications in MaRDI used the software bootstrap?",
+      "gold_sparql": "SELECT ?p ?pLabel WHERE { ?p wdt:P1463 wd:Q30935 . SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". } }",
+      "pivot_entities": [
+        "Q30935"
+      ],
+      "gold_fact": "Names concrete MaRDI publications that use bootstrap (1151 exist) and does not invent titles.",
+      "answer_shape": "truncated_list",
+      "expected_counts": {
+        "publications": 1151
+      }
+    },
+    {
+      "id": "P03",
+      "intent": "traversal",
+      "question": "Which publications in MaRDI used the software KernSmooth?",
+      "gold_sparql": "SELECT ?p ?pLabel WHERE { ?p wdt:P1463 wd:Q16757 . SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". } }",
+      "pivot_entities": [
+        "Q16757"
+      ],
+      "gold_fact": "Names concrete MaRDI publications that use KernSmooth (1029 exist) and does not invent titles.",
+      "answer_shape": "truncated_list",
+      "expected_counts": {
+        "publications": 1029
+      }
+    },
+    {
+      "id": "P04",
+      "intent": "traversal",
+      "question": "Which publications in MaRDI used the software QRM?",
+      "gold_sparql": "SELECT ?p ?pLabel WHERE { ?p wdt:P1463 wd:Q23304 . SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". } }",
+      "pivot_entities": [
+        "Q23304"
+      ],
+      "gold_fact": "Names concrete MaRDI publications that use QRM (820 exist) and does not invent titles.",
+      "answer_shape": "truncated_list",
+      "expected_counts": {
+        "publications": 820
+      }
+    },
+    {
+      "id": "P05",
+      "intent": "traversal",
+      "question": "Which publications in MaRDI used the software SemiPar?",
+      "gold_sparql": "SELECT ?p ?pLabel WHERE { ?p wdt:P1463 wd:Q19172 . SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". } }",
+      "pivot_entities": [
+        "Q19172"
+      ],
+      "gold_fact": "Names concrete MaRDI publications that use SemiPar (792 exist) and does not invent titles.",
+      "answer_shape": "truncated_list",
+      "expected_counts": {
+        "publications": 792
+      }
+    },
+    {
+      "id": "P06",
+      "intent": "traversal",
+      "question": "Which publications in MaRDI used the software glmnet?",
+      "gold_sparql": "SELECT ?p ?pLabel WHERE { ?p wdt:P1463 wd:Q20169 . SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". } }",
+      "pivot_entities": [
+        "Q20169"
+      ],
+      "gold_fact": "Names concrete MaRDI publications that use glmnet (680 exist) and does not invent titles.",
+      "answer_shape": "truncated_list",
+      "expected_counts": {
+        "publications": 680
+      }
+    },
+    {
+      "id": "P07",
+      "intent": "traversal",
+      "question": "Which publications in MaRDI used the software longmemo?",
+      "gold_sparql": "SELECT ?p ?pLabel WHERE { ?p wdt:P1463 wd:Q23163 . SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". } }",
+      "pivot_entities": [
+        "Q23163"
+      ],
+      "gold_fact": "Names concrete MaRDI publications that use longmemo (665 exist) and does not invent titles.",
+      "answer_shape": "truncated_list",
+      "expected_counts": {
+        "publications": 665
+      }
+    },
+    {
+      "id": "P08",
+      "intent": "traversal",
+      "question": "Which publications in MaRDI used the software glasso?",
+      "gold_sparql": "SELECT ?p ?pLabel WHERE { ?p wdt:P1463 wd:Q19462 . SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". } }",
+      "pivot_entities": [
+        "Q19462"
+      ],
+      "gold_fact": "Names concrete MaRDI publications that use glasso (557 exist) and does not invent titles.",
+      "answer_shape": "truncated_list",
+      "expected_counts": {
+        "publications": 557
+      }
+    },
+    {
+      "id": "C01",
+      "intent": "count",
+      "question": "How many publications in MaRDI used the software BayesDA?",
+      "gold_sparql": "SELECT (COUNT(DISTINCT ?p) AS ?n) WHERE { ?p wdt:P1463 wd:Q22960 }",
+      "pivot_entities": [
+        "Q22960"
+      ],
+      "gold_fact": "States a count within 10% of 1438.",
+      "answer_shape": "count",
+      "numeric_answer": 1438
+    },
+    {
+      "id": "C02",
+      "intent": "count",
+      "question": "How many publications in MaRDI used the software bootstrap?",
+      "gold_sparql": "SELECT (COUNT(DISTINCT ?p) AS ?n) WHERE { ?p wdt:P1463 wd:Q30935 }",
+      "pivot_entities": [
+        "Q30935"
+      ],
+      "gold_fact": "States a count within 10% of 1151.",
+      "answer_shape": "count",
+      "numeric_answer": 1151
+    },
+    {
+      "id": "C03",
+      "intent": "count",
+      "question": "How many publications in MaRDI used the software KernSmooth?",
+      "gold_sparql": "SELECT (COUNT(DISTINCT ?p) AS ?n) WHERE { ?p wdt:P1463 wd:Q16757 }",
+      "pivot_entities": [
+        "Q16757"
+      ],
+      "gold_fact": "States a count within 10% of 1029.",
+      "answer_shape": "count",
+      "numeric_answer": 1029
+    },
+    {
+      "id": "C04",
+      "intent": "count",
+      "question": "How many publications in MaRDI used the software QRM?",
+      "gold_sparql": "SELECT (COUNT(DISTINCT ?p) AS ?n) WHERE { ?p wdt:P1463 wd:Q23304 }",
+      "pivot_entities": [
+        "Q23304"
+      ],
+      "gold_fact": "States a count within 10% of 820.",
+      "answer_shape": "count",
+      "numeric_answer": 820
+    },
+    {
+      "id": "C05",
+      "intent": "count",
+      "question": "How many publications in MaRDI used the software SemiPar?",
+      "gold_sparql": "SELECT (COUNT(DISTINCT ?p) AS ?n) WHERE { ?p wdt:P1463 wd:Q19172 }",
+      "pivot_entities": [
+        "Q19172"
+      ],
+      "gold_fact": "States a count within 10% of 792.",
+      "answer_shape": "count",
+      "numeric_answer": 792
+    },
+    {
+      "id": "C06",
+      "intent": "count",
+      "question": "How many publications in MaRDI used the software glmnet?",
+      "gold_sparql": "SELECT (COUNT(DISTINCT ?p) AS ?n) WHERE { ?p wdt:P1463 wd:Q20169 }",
+      "pivot_entities": [
+        "Q20169"
+      ],
+      "gold_fact": "States a count within 10% of 680.",
+      "answer_shape": "count",
+      "numeric_answer": 680
+    },
+    {
+      "id": "C07",
+      "intent": "count",
+      "question": "How many publications in MaRDI used the software longmemo?",
+      "gold_sparql": "SELECT (COUNT(DISTINCT ?p) AS ?n) WHERE { ?p wdt:P1463 wd:Q23163 }",
+      "pivot_entities": [
+        "Q23163"
+      ],
+      "gold_fact": "States a count within 10% of 665.",
+      "answer_shape": "count",
+      "numeric_answer": 665
+    },
+    {
+      "id": "C08",
+      "intent": "count",
+      "question": "How many publications in MaRDI used the software glasso?",
+      "gold_sparql": "SELECT (COUNT(DISTINCT ?p) AS ?n) WHERE { ?p wdt:P1463 wd:Q19462 }",
+      "pivot_entities": [
+        "Q19462"
+      ],
+      "gold_fact": "States a count within 10% of 557.",
+      "answer_shape": "count",
+      "numeric_answer": 557
+    },
+    {
+      "id": "J01",
+      "intent": "join",
+      "question": "How many publications in MaRDI used both BayesDA and bootstrap?",
+      "gold_sparql": "SELECT (COUNT(DISTINCT ?p) AS ?n) WHERE { ?p wdt:P1463 wd:Q22960 . ?p wdt:P1463 wd:Q30935 }",
+      "pivot_entities": [
+        "Q22960"
+      ],
+      "gold_fact": "States a count within 15% of 22.",
+      "answer_shape": "count",
+      "numeric_answer": 22
+    },
+    {
+      "id": "J02",
+      "intent": "join",
+      "question": "How many publications in MaRDI used both bootstrap and KernSmooth?",
+      "gold_sparql": "SELECT (COUNT(DISTINCT ?p) AS ?n) WHERE { ?p wdt:P1463 wd:Q30935 . ?p wdt:P1463 wd:Q16757 }",
+      "pivot_entities": [
+        "Q30935"
+      ],
+      "gold_fact": "States a count within 15% of 18.",
+      "answer_shape": "count",
+      "numeric_answer": 18
+    },
+    {
+      "id": "J03",
+      "intent": "join",
+      "question": "How many publications in MaRDI used both bootstrap and glmnet?",
+      "gold_sparql": "SELECT (COUNT(DISTINCT ?p) AS ?n) WHERE { ?p wdt:P1463 wd:Q30935 . ?p wdt:P1463 wd:Q20169 }",
+      "pivot_entities": [
+        "Q30935"
+      ],
+      "gold_fact": "States a count within 15% of 4.",
+      "answer_shape": "count",
+      "numeric_answer": 4
+    },
+    {
+      "id": "J04",
+      "intent": "join",
+      "question": "How many publications in MaRDI used both KernSmooth and SemiPar?",
+      "gold_sparql": "SELECT (COUNT(DISTINCT ?p) AS ?n) WHERE { ?p wdt:P1463 wd:Q16757 . ?p wdt:P1463 wd:Q19172 }",
+      "pivot_entities": [
+        "Q16757"
+      ],
+      "gold_fact": "States a count within 15% of 31.",
+      "answer_shape": "count",
+      "numeric_answer": 31
+    },
+    {
+      "id": "J05",
+      "intent": "join",
+      "question": "How many publications in MaRDI used both glmnet and glasso?",
+      "gold_sparql": "SELECT (COUNT(DISTINCT ?p) AS ?n) WHERE { ?p wdt:P1463 wd:Q20169 . ?p wdt:P1463 wd:Q19462 }",
+      "pivot_entities": [
+        "Q20169"
+      ],
+      "gold_fact": "States a count within 15% of 45.",
+      "answer_shape": "count",
+      "numeric_answer": 45
+    },
+    {
+      "id": "J06",
+      "intent": "join",
+      "question": "How many publications in MaRDI used both bootstrap and boot?",
+      "gold_sparql": "SELECT (COUNT(DISTINCT ?p) AS ?n) WHERE { ?p wdt:P1463 wd:Q30935 . ?p wdt:P1463 wd:Q56342 }",
+      "pivot_entities": [
+        "Q30935"
+      ],
+      "gold_fact": "States a count within 15% of 134.",
+      "answer_shape": "count",
+      "numeric_answer": 134
+    },
+    {
+      "id": "J07",
+      "intent": "join",
+      "question": "How many publications in MaRDI used both QRM and longmemo?",
+      "gold_sparql": "SELECT (COUNT(DISTINCT ?p) AS ?n) WHERE { ?p wdt:P1463 wd:Q23304 . ?p wdt:P1463 wd:Q23163 }",
+      "pivot_entities": [
+        "Q23304"
+      ],
+      "gold_fact": "Says that no publication uses both, or that the graph records none.",
+      "answer_shape": "count",
+      "numeric_answer": 0
+    },
+    {
+      "id": "J08",
+      "intent": "join",
+      "question": "How many publications in MaRDI used both boot and mclust?",
+      "gold_sparql": "SELECT (COUNT(DISTINCT ?p) AS ?n) WHERE { ?p wdt:P1463 wd:Q56342 . ?p wdt:P1463 wd:Q13318 }",
+      "pivot_entities": [
+        "Q56342"
+      ],
+      "gold_fact": "States a count within 15% of 2.",
+      "answer_shape": "count",
+      "numeric_answer": 2
+    },
+    {
+      "id": "T01",
+      "intent": "temporal",
+      "question": "How many publications in MaRDI used bootstrap and were published in 2015 or later?",
+      "gold_sparql": "SELECT (COUNT(DISTINCT ?p) AS ?n) WHERE { ?p wdt:P1463 wd:Q30935 ; wdt:P28 ?d . FILTER(YEAR(?d) >= 2015) }",
+      "pivot_entities": [
+        "Q30935"
+      ],
+      "gold_fact": "States a count within 15% of 571.",
+      "answer_shape": "count",
+      "numeric_answer": 571
+    },
+    {
+      "id": "T02",
+      "intent": "temporal",
+      "question": "How many publications in MaRDI used KernSmooth and were published in 2010 or later?",
+      "gold_sparql": "SELECT (COUNT(DISTINCT ?p) AS ?n) WHERE { ?p wdt:P1463 wd:Q16757 ; wdt:P28 ?d . FILTER(YEAR(?d) >= 2010) }",
+      "pivot_entities": [
+        "Q16757"
+      ],
+      "gold_fact": "States a count within 15% of 656.",
+      "answer_shape": "count",
+      "numeric_answer": 656
+    },
+    {
+      "id": "T03",
+      "intent": "temporal",
+      "question": "How many publications in MaRDI used glmnet and were published in 2015 or later?",
+      "gold_sparql": "SELECT (COUNT(DISTINCT ?p) AS ?n) WHERE { ?p wdt:P1463 wd:Q20169 ; wdt:P28 ?d . FILTER(YEAR(?d) >= 2015) }",
+      "pivot_entities": [
+        "Q20169"
+      ],
+      "gold_fact": "States a count within 15% of 585.",
+      "answer_shape": "count",
+      "numeric_answer": 585
+    },
+    {
+      "id": "T04",
+      "intent": "temporal",
+      "question": "How many publications in MaRDI used BayesDA and were published in 2010 or later?",
+      "gold_sparql": "SELECT (COUNT(DISTINCT ?p) AS ?n) WHERE { ?p wdt:P1463 wd:Q22960 ; wdt:P28 ?d . FILTER(YEAR(?d) >= 2010) }",
+      "pivot_entities": [
+        "Q22960"
+      ],
+      "gold_fact": "States a count within 15% of 1266.",
+      "answer_shape": "count",
+      "numeric_answer": 1266
+    },
+    {
+      "id": "T05",
+      "intent": "temporal",
+      "question": "How many publications in MaRDI used boot and were published in 2015 or later?",
+      "gold_sparql": "SELECT (COUNT(DISTINCT ?p) AS ?n) WHERE { ?p wdt:P1463 wd:Q56342 ; wdt:P28 ?d . FILTER(YEAR(?d) >= 2015) }",
+      "pivot_entities": [
+        "Q56342"
+      ],
+      "gold_fact": "States a count within 15% of 299.",
+      "answer_shape": "count",
+      "numeric_answer": 299
+    },
+    {
+      "id": "T06",
+      "intent": "temporal",
+      "question": "How many publications in MaRDI used ggplot2 and were published in 2015 or later?",
+      "gold_sparql": "SELECT (COUNT(DISTINCT ?p) AS ?n) WHERE { ?p wdt:P1463 wd:Q57344 ; wdt:P28 ?d . FILTER(YEAR(?d) >= 2015) }",
+      "pivot_entities": [
+        "Q57344"
+      ],
+      "gold_fact": "States a count within 15% of 214.",
+      "answer_shape": "count",
+      "numeric_answer": 214
+    },
+    {
+      "id": "N01",
+      "intent": "no_data",
+      "question": "Which publications in MaRDI used Mergesort?",
+      "gold_sparql": "SELECT (COUNT(DISTINCT ?p) AS ?n) WHERE { ?p wdt:P1463 wd:Q6825472 }",
+      "pivot_entities": [
+        "Q6825472"
+      ],
+      "gold_fact": "MaRDI records NO publication as *using* this algorithm. The answer must not claim any publication used it. It MAY additionally note that 2 publications *describe* it (property P286) — doing so is better, not worse, as long as the two relations are kept distinct.",
+      "answer_shape": "count",
+      "numeric_answer": 0
+    },
+    {
+      "id": "N02",
+      "intent": "no_data",
+      "question": "Which publications in MaRDI used the divide-and-conquer eigensolver for symmetric tridiagonal matrices?",
+      "gold_sparql": "SELECT (COUNT(DISTINCT ?p) AS ?n) WHERE { ?p wdt:P1463 wd:Q6825468 }",
+      "pivot_entities": [
+        "Q6825468"
+      ],
+      "gold_fact": "MaRDI records NO publication as *using* this algorithm. The answer must not claim any publication used it. It MAY additionally note that 2 publications *describe* it (property P286) — doing so is better, not worse, as long as the two relations are kept distinct.",
+      "answer_shape": "count",
+      "numeric_answer": 0
+    },
+    {
+      "id": "N03",
+      "intent": "no_data",
+      "question": "Which publications in MaRDI used PGD?",
+      "gold_sparql": "SELECT (COUNT(DISTINCT ?p) AS ?n) WHERE { ?p wdt:P1463 wd:Q6825462 }",
+      "pivot_entities": [
+        "Q6825462"
+      ],
+      "gold_fact": "MaRDI records NO publication as *using* this algorithm. The answer must not claim any publication used it. It MAY additionally note that 2 publications *describe* it (property P286) — doing so is better, not worse, as long as the two relations are kept distinct.",
+      "answer_shape": "count",
+      "numeric_answer": 0
+    },
+    {
+      "id": "N04",
+      "intent": "no_data",
+      "question": "Which publications in MaRDI used Second-Order Balanced Truncation?",
+      "gold_sparql": "SELECT (COUNT(DISTINCT ?p) AS ?n) WHERE { ?p wdt:P1463 wd:Q6825467 }",
+      "pivot_entities": [
+        "Q6825467"
+      ],
+      "gold_fact": "MaRDI records NO publication as *using* this algorithm. The answer must not claim any publication used it. It MAY additionally note that 14 publications *describe* it (property P286) — doing so is better, not worse, as long as the two relations are kept distinct.",
+      "answer_shape": "count",
+      "numeric_answer": 0
+    },
+    {
+      "id": "N05",
+      "intent": "no_data",
+      "question": "Which publications in MaRDI used the Localized Reduced Basis Multiscale Method?",
+      "gold_sparql": "SELECT (COUNT(DISTINCT ?p) AS ?n) WHERE { ?p wdt:P1463 wd:Q6825476 }",
+      "pivot_entities": [
+        "Q6825476"
+      ],
+      "gold_fact": "MaRDI records NO publication as *using* this algorithm. The answer must not claim any publication used it. It MAY additionally note that 1 publications *describe* it (property P286) — doing so is better, not worse, as long as the two relations are kept distinct.",
+      "answer_shape": "count",
+      "numeric_answer": 0
+    },
+    {
+      "id": "N06",
+      "intent": "no_data",
+      "question": "Which publications in MaRDI used the Michaelis-Menten equation (bi bi reaction)?",
+      "gold_sparql": "SELECT (COUNT(DISTINCT ?p) AS ?n) WHERE { ?p wdt:P1463 wd:Q6674193 }",
+      "pivot_entities": [
+        "Q6674193"
+      ],
+      "gold_fact": "MaRDI records NO publication as *using* this formula. The answer must not claim any publication used it. It MAY additionally note that 0 publications *describe* it (property P286) — doing so is better, not worse, as long as the two relations are kept distinct.",
+      "answer_shape": "count",
+      "numeric_answer": 0
+    },
+    {
+      "id": "N07",
+      "intent": "no_data",
+      "question": "Which publications in MaRDI used the product 1 concentration ODE?",
+      "gold_sparql": "SELECT (COUNT(DISTINCT ?p) AS ?n) WHERE { ?p wdt:P1463 wd:Q6674189 }",
+      "pivot_entities": [
+        "Q6674189"
+      ],
+      "gold_fact": "MaRDI records NO publication as *using* this formula. The answer must not claim any publication used it. It MAY additionally note that 0 publications *describe* it (property P286) — doing so is better, not worse, as long as the two relations are kept distinct.",
+      "answer_shape": "count",
+      "numeric_answer": 0
+    },
+    {
+      "id": "N08",
+      "intent": "no_data",
+      "question": "How many publications in MaRDI used Mergesort?",
+      "gold_sparql": "SELECT (COUNT(DISTINCT ?p) AS ?n) WHERE { ?p wdt:P1463 wd:Q6825472 }",
+      "pivot_entities": [
+        "Q6825472"
+      ],
+      "gold_fact": "Says zero publications are recorded as using it, or that no such link exists. Must NOT invent a non-zero count for *usage*. Noting that 2 publications describe it is acceptable and welcome if labelled as a different relation.",
+      "answer_shape": "count",
+      "numeric_answer": 0
+    },
+    {
+      "id": "N09",
+      "intent": "no_data",
+      "question": "How many publications in MaRDI used the divide-and-conquer eigensolver for symmetric tridiagonal matrices?",
+      "gold_sparql": "SELECT (COUNT(DISTINCT ?p) AS ?n) WHERE { ?p wdt:P1463 wd:Q6825468 }",
+      "pivot_entities": [
+        "Q6825468"
+      ],
+      "gold_fact": "Says zero publications are recorded as using it, or that no such link exists. Must NOT invent a non-zero count for *usage*. Noting that 2 publications describe it is acceptable and welcome if labelled as a different relation.",
+      "answer_shape": "count",
+      "numeric_answer": 0
+    },
+    {
+      "id": "N10",
+      "intent": "no_data",
+      "question": "How many publications in MaRDI used PGD?",
+      "gold_sparql": "SELECT (COUNT(DISTINCT ?p) AS ?n) WHERE { ?p wdt:P1463 wd:Q6825462 }",
+      "pivot_entities": [
+        "Q6825462"
+      ],
+      "gold_fact": "Says zero publications are recorded as using it, or that no such link exists. Must NOT invent a non-zero count for *usage*. Noting that 2 publications describe it is acceptable and welcome if labelled as a different relation.",
+      "answer_shape": "count",
+      "numeric_answer": 0
+    },
+    {
+      "id": "N11",
+      "intent": "no_data",
+      "question": "How many publications in MaRDI used Second-Order Balanced Truncation?",
+      "gold_sparql": "SELECT (COUNT(DISTINCT ?p) AS ?n) WHERE { ?p wdt:P1463 wd:Q6825467 }",
+      "pivot_entities": [
+        "Q6825467"
+      ],
+      "gold_fact": "Says zero publications are recorded as using it, or that no such link exists. Must NOT invent a non-zero count for *usage*. Noting that 14 publications describe it is acceptable and welcome if labelled as a different relation.",
+      "answer_shape": "count",
+      "numeric_answer": 0
+    },
+    {
+      "id": "A01",
+      "intent": "algorithm_links",
+      "question": "Which publications in MaRDI describe BT (balanced truncation)?",
+      "gold_sparql": "SELECT ?p ?pLabel WHERE { wd:Q6825327 wdt:P286 ?p . SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". } }",
+      "pivot_entities": [
+        "Q6825327"
+      ],
+      "gold_fact": "Names concrete MaRDI publications describing BT (balanced truncation) (113 are linked) without inventing titles.",
+      "answer_shape": "truncated_list",
+      "expected_counts": {
+        "publications": 113
+      }
+    },
+    {
+      "id": "A02",
+      "intent": "algorithm_links",
+      "question": "Which publications in MaRDI describe POD?",
+      "gold_sparql": "SELECT ?p ?pLabel WHERE { wd:Q6825312 wdt:P286 ?p . SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". } }",
+      "pivot_entities": [
+        "Q6825312"
+      ],
+      "gold_fact": "Names concrete MaRDI publications describing POD (60 are linked) without inventing titles.",
+      "answer_shape": "truncated_list",
+      "expected_counts": {
+        "publications": 60
+      }
+    },
+    {
+      "id": "A03",
+      "intent": "algorithm_links",
+      "question": "Which publications in MaRDI describe Cross-Gramian-Based Balanced Truncation?",
+      "gold_sparql": "SELECT ?p ?pLabel WHERE { wd:Q6825394 wdt:P286 ?p . SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". } }",
+      "pivot_entities": [
+        "Q6825394"
+      ],
+      "gold_fact": "Names concrete MaRDI publications describing Cross-Gramian-Based Balanced Truncation (39 are linked) without inventing titles.",
+      "answer_shape": "list",
+      "required_entities": [
+        "Q1093602",
+        "Q1611928",
+        "Q1719244",
+        "Q2138220",
+        "Q2982643",
+        "Q3216503",
+        "Q3325549",
+        "Q3347739",
+        "Q3741498",
+        "Q4594987",
+        "Q4637165",
+        "Q4745688",
+        "Q4747984",
+        "Q5111598",
+        "Q5202885",
+        "Q5711209",
+        "Q6245316",
+        "Q6824304",
+        "Q6824368",
+        "Q6824409",
+        "Q6824451",
+        "Q6824479",
+        "Q6824492",
+        "Q6824497",
+        "Q6824503",
+        "Q6824514",
+        "Q6824518",
+        "Q6824527",
+        "Q6824569",
+        "Q6824580",
+        "Q6824651",
+        "Q6824707",
+        "Q6824724",
+        "Q6824748",
+        "Q6824781",
+        "Q6824864",
+        "Q6824881",
+        "Q6824933",
+        "Q6825071"
+      ]
+    },
+    {
+      "id": "A04",
+      "intent": "algorithm_links",
+      "question": "Which publications in MaRDI describe the Lanczos Algorithm?",
+      "gold_sparql": "SELECT ?p ?pLabel WHERE { wd:Q6825500 wdt:P286 ?p . SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". } }",
+      "pivot_entities": [
+        "Q6825500"
+      ],
+      "gold_fact": "Names concrete MaRDI publications describing the Lanczos Algorithm (21 are linked) without inventing titles.",
+      "answer_shape": "list",
+      "required_entities": [
+        "Q1114332",
+        "Q1157667",
+        "Q122463",
+        "Q2441140",
+        "Q2755107",
+        "Q3006031",
+        "Q3430643",
+        "Q3988979",
+        "Q4693193",
+        "Q4786440",
+        "Q5470500",
+        "Q5491444",
+        "Q6775709",
+        "Q6824344",
+        "Q6824686",
+        "Q6824875",
+        "Q6825054",
+        "Q6825069",
+        "Q6825088",
+        "Q6825093",
+        "Q6825139"
+      ]
+    },
+    {
+      "id": "A05",
+      "intent": "algorithm_links",
+      "question": "Which publications in MaRDI describe Rayleigh Quotient Iteration?",
+      "gold_sparql": "SELECT ?p ?pLabel WHERE { wd:Q6825416 wdt:P286 ?p . SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". } }",
+      "pivot_entities": [
+        "Q6825416"
+      ],
+      "gold_fact": "Names concrete MaRDI publications describing Rayleigh Quotient Iteration (19 are linked) without inventing titles.",
+      "answer_shape": "list",
+      "required_entities": [
+        "Q1301312",
+        "Q1599140",
+        "Q2441140",
+        "Q2547795",
+        "Q3006031",
+        "Q3133142",
+        "Q3823066",
+        "Q4045510",
+        "Q4443763",
+        "Q6824344",
+        "Q6824464",
+        "Q6824747",
+        "Q6824806",
+        "Q6824875",
+        "Q6824891",
+        "Q6824972",
+        "Q770594",
+        "Q771463",
+        "Q771791"
+      ]
+    },
+    {
+      "id": "A06",
+      "intent": "algorithm_links",
+      "question": "Which software in MaRDI implements BT (balanced truncation)?",
+      "gold_sparql": "SELECT ?s ?sLabel WHERE { wd:Q6825327 wdt:P1766 ?s . SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". } }",
+      "pivot_entities": [
+        "Q6825327"
+      ],
+      "gold_fact": "Names concrete software implementing BT (balanced truncation) (12 are linked) without inventing names.",
+      "answer_shape": "list",
+      "required_entities": [
+        "Q6825414",
+        "Q6825441",
+        "Q6825479",
+        "Q6825545",
+        "Q6825635",
+        "Q6825637",
+        "Q6825642",
+        "Q6825754",
+        "Q6825763",
+        "Q6825818",
+        "Q6825836",
+        "Q6825893"
+      ]
+    },
+    {
+      "id": "A07",
+      "intent": "algorithm_links",
+      "question": "Which software in MaRDI implements LU decomposition?",
+      "gold_sparql": "SELECT ?s ?sLabel WHERE { wd:Q6825481 wdt:P1766 ?s . SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". } }",
+      "pivot_entities": [
+        "Q6825481"
+      ],
+      "gold_fact": "Names concrete software implementing LU decomposition (11 are linked) without inventing names.",
+      "answer_shape": "list",
+      "required_entities": [
+        "Q6825348",
+        "Q6825364",
+        "Q6825373",
+        "Q6825400",
+        "Q6825423",
+        "Q6825482",
+        "Q6825530",
+        "Q6825571",
+        "Q6825607",
+        "Q6825706",
+        "Q6825741"
+      ]
+    },
+    {
+      "id": "A08",
+      "intent": "algorithm_links",
+      "question": "Which software in MaRDI implements Cholesky Decomposition?",
+      "gold_sparql": "SELECT ?s ?sLabel WHERE { wd:Q6825362 wdt:P1766 ?s . SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". } }",
+      "pivot_entities": [
+        "Q6825362"
+      ],
+      "gold_fact": "Names concrete software implementing Cholesky Decomposition (10 are linked) without inventing names.",
+      "answer_shape": "list",
+      "required_entities": [
+        "Q6825348",
+        "Q6825364",
+        "Q6825373",
+        "Q6825400",
+        "Q6825423",
+        "Q6825482",
+        "Q6825530",
+        "Q6825571",
+        "Q6825706",
+        "Q6825741"
+      ]
+    },
+    {
+      "id": "A09",
+      "intent": "algorithm_links",
+      "question": "Which software in MaRDI implements Singular Value Decomposition?",
+      "gold_sparql": "SELECT ?s ?sLabel WHERE { wd:Q6825396 wdt:P1766 ?s . SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". } }",
+      "pivot_entities": [
+        "Q6825396"
+      ],
+      "gold_fact": "Names concrete software implementing Singular Value Decomposition (8 are linked) without inventing names.",
+      "answer_shape": "list",
+      "required_entities": [
+        "Q6825342",
+        "Q6825364",
+        "Q6825423",
+        "Q6825482",
+        "Q6825530",
+        "Q6825571",
+        "Q6825706",
+        "Q6825741"
+      ]
+    }
+  ]
+}

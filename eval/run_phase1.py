@@ -55,6 +55,10 @@ import stage_metrics as sm
 SETS = {
     "phase1": "test_set_phase1.json",   # hard set: localises new defects
     "easy": "test_set_easy.json",       # known-good set: catches regressions
+    # 50 questions, large enough for a confidence interval worth quoting: six
+    # questions put the system's accuracy somewhere between 44% and 97%.
+    # Built by eval/build_test_set_staged.py from test_set_v2.json.
+    "v2": "test_set_v2_staged.json",
 }
 
 JUDGE_SYSTEM = """\
