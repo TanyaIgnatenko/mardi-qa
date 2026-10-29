@@ -5,17 +5,6 @@ Container Registry (ghcr.io) by the
 [`docker-publish.yml`](../.github/workflows/docker-publish.yml) workflow on every
 push to `main`/`master`.
 
-The ZIB copy of the repository builds its own image through
-[`.gitlab-ci.yml`](../.gitlab-ci.yml) and publishes it to that project's
-container registry:
-
-```
-registry.git.zib.de/tignatenko/mardi_qa:latest     # default branch
-registry.git.zib.de/tignatenko/mardi_qa:<sha>      # immutable per-commit tag
-```
-
-Deploy from the commit tag rather than `:latest` — `:latest` moves under you.
-
 ## Image
 
 ```
